@@ -16,9 +16,7 @@ export default class Ground {
     init() {
         const groundGeo = new THREE.PlaneGeometry(100, 100)
         const groundMat = new THREE.MeshStandardMaterial({ 
-            color: '#111111',
-            metalness: 0.3,
-            roughness: 0.8 
+            transparent: true
         })
         
         this.meshInstance = new THREE.Mesh(groundGeo, groundMat)

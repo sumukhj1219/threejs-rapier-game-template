@@ -6,6 +6,7 @@ import Physics from './Physics.js'
 import Ground from './Ground.js'
 import View from './View.js'
 import Weapon from './Weapon.js'
+import Train from './Train.js'
 
 export default class World {
     constructor(_options) {
@@ -40,6 +41,7 @@ export default class World {
         this.player = new Player()
         this.view = new View()
         this.weapon = new Weapon()
+        this.train = new Train()
 
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
