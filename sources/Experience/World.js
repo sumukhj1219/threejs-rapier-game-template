@@ -4,6 +4,8 @@ import Player from './Player.js'
 import Environment from './Environment.js'
 import Physics from './Physics.js'
 import Ground from './Ground.js'
+import View from './View.js'
+import Weapon from './Weapon.js'
 
 export default class World {
     constructor(_options) {
@@ -36,6 +38,8 @@ export default class World {
 
         this.ground = new Ground()
         this.player = new Player()
+        this.view = new View()
+        this.weapon = new Weapon()
 
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
@@ -50,6 +54,7 @@ export default class World {
     update() {
         if (this.physics) this.physics.update()
         if (this.player) this.player.update()
+        if (this.view) this.view.update()
     }
 
     destroy() {

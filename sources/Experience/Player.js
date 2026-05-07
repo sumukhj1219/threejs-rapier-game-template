@@ -85,7 +85,21 @@ export default class Player {
 
         setTimeout(() => {
             this.canJump = true;
-        }, 500);
+        }, 1500);
+    }
+
+    view() {
+        const direction = new THREE.Vector3()
+        const frontVector = new THREE.Vector3(0, 0, Number(this.keys.s) - Number(this.keys.w))
+        const sideVector = new THREE.Vector3(Number(this.keys.a) - Number(this.keys.d), 0, 0)
+
+        direction
+            .subVectors(frontVector, sideVector)
+            .normalize()
+            .applyQuaternion(this.meshInstance.quaternion)
+            .multiplyScalar(this.speed)
+
+        this.rigidBody.setLinvel({ x: direction.x, y: this.rigidBody.linvel().y, z: direction.z }, true)
     }
 
     update() {
@@ -97,6 +111,7 @@ export default class Player {
             this.meshInstance.quaternion.copy(rotation);
         }
 
+        this.view()
         this.movements()
     }
 }
