@@ -120,6 +120,7 @@ export default class Experience
 
         if(this.world)
             this.world.update()
+
         
         if(this.renderer)
             this.renderer.update()

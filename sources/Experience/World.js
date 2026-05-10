@@ -26,7 +26,7 @@ export default class World {
     setBaseGrid() {
         const size = 100;
         const divisions = 100;
-        const gridHelper = new THREE.GridHelper(size, divisions, "#0a0a0a", "#0a0a0a");
+        const gridHelper = new THREE.GridHelper(size, divisions, "#0c0c0c", "#0a0a0a");
         this.scene.add(gridHelper);
     }
 
@@ -53,8 +53,8 @@ export default class World {
 
     update() {
         if (this.physics) this.physics.update()
-        if (this.player) this.player.update()
         if (this.view) this.view.update()
+        if (this.player) this.player.update()
     }
 
     destroy() {

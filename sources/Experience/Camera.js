@@ -72,7 +72,6 @@ export default class Camera
     {
         // Update debug orbit controls
         this.modes.debug.orbitControls.update()
-
         // Apply coordinates
         this.instance.position.copy(this.modes[this.mode].instance.position)
         this.instance.quaternion.copy(this.modes[this.mode].instance.quaternion)

@@ -42,6 +42,7 @@ export default class Renderer
         this.instance.domElement.style.left = 0
         this.instance.domElement.style.width = '100%'
         this.instance.domElement.style.height = '100%'
+        
 
         this.instance.setClearColor(this.clearColor, 1)
         this.instance.setSize(this.config.width, this.config.height)
