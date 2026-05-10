@@ -1,6 +1,7 @@
 import Experience from "./Experience";
 import * as THREE from 'three'
 import RAPIER from "@dimforge/rapier3d-compat";
+import Weapon from "./Weapon";
 
 export default class Player {
     constructor() {
@@ -11,6 +12,8 @@ export default class Player {
         this.init()
         this.setPhysics()
         this.controls()
+
+        this.weapon = new Weapon()
     }
 
     init() {
@@ -113,5 +116,7 @@ export default class Player {
 
         this.view()
         this.movements()
+        if (this.weapon)
+            this.weapon.update()
     }
 }

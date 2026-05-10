@@ -1,19 +1,53 @@
-*
-{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
 html,
-body
-{
+body {
     overflow: hidden;
 }
 
-.experience
-{
+.experience {
     position: fixed;
     width: 100vw;
     height: 100vh;
+}
+
+.cod-crosshair {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease-out;
+}
+
+.cod-crosshair div {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8); 
+}
+
+.cod-crosshair .top { top: 0; width: 2px; height: 8px; left: calc(50% - 1px); }
+.cod-crosshair .bottom { bottom: 0; width: 2px; height: 8px; left: calc(50% - 1px); }
+.cod-crosshair .left { left: 0; width: 8px; height: 2px; top: calc(50% - 1px); }
+.cod-crosshair .right { right: 0; width: 8px; height: 2px; top: calc(50% - 1px); }
+
+.cod-crosshair .dot {
+    width: 2px;
+    height: 2px;
+    background-color: #00ff00; 
+    border-radius: 50%;
+}
+
+.cod-crosshair.bloom {
+    width: 60px;
+    height: 60px;
 }
