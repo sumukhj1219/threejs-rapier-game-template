@@ -33,9 +33,10 @@ export default class View {
         if (!this.world.player) return
 
         const playerMesh = this.world.player.meshInstance
+        const slideOffset = this.world.player.sliding ? 0.4 : 0.8
 
         this.camera.position.copy(playerMesh.position)
-        this.camera.position.y += 0.8 
+        this.camera.position.y += slideOffset
 
         this.camera.quaternion.setFromEuler(this.euler)
 

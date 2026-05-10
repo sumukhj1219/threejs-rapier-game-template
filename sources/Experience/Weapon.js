@@ -74,6 +74,30 @@ export default class Weapon {
         this.container.rotation.z = Math.sin(elapsed * 0.05) * 0.01;
     }
 
+    slidePose() {
+        const player = this.experience.world?.player
+        const sliding = Boolean(player && player.sliding)
+
+        const targetZ = sliding ? -0.2 : 0
+        const targetRotX = sliding ? 0.3 : 0
+        const targetRotZ = sliding ? 0.2 : 0
+
+        this.container.position.z = THREE.MathUtils.lerp(this.container.position.z, targetZ, 0.15)
+        this.container.rotation.x = THREE.MathUtils.lerp(this.container.rotation.x, targetRotX, 0.15)
+        this.container.rotation.z = THREE.MathUtils.lerp(this.container.rotation.z, targetRotZ, 0.15)
+    }
+
+    sprintPose() {
+        const player = this.experience.world?.player
+        const sprinting = Boolean(player && player.isSprinting)
+
+        const targetY = sprinting ? -0.7 : -0.4
+        const targetRotX = sprinting ? 0.25 : 0
+
+        this.container.position.y = THREE.MathUtils.lerp(this.container.position.y, targetY, 0.12)
+        this.container.rotation.x = THREE.MathUtils.lerp(this.container.rotation.x, targetRotX, 0.12)
+    }
+
     createCrosshair() {
         if (document.querySelector('.cod-crosshair')) return;
 
@@ -169,5 +193,7 @@ export default class Weapon {
         }
 
         this.breathe()
+        this.slidePose()
+        this.sprintPose()
     }
 }

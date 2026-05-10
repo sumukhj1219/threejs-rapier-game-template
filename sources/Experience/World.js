@@ -53,8 +53,8 @@ export default class World {
 
     update() {
         if (this.physics) this.physics.update()
-        if (this.player) this.player.update()
         if (this.view) this.view.update()
+        if (this.player) this.player.update()
     }
 
     destroy() {
