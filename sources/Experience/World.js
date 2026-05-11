@@ -14,20 +14,7 @@ export default class World {
         this.scene = this.experience.scene
         this.resources = this.experience.resources
 
-        this.resources.on('groupEnd', (_group) => {
-            if (_group.name === 'base') {
-                this.setBaseGrid()
-            }
-        })
-
         this.init()
-    }
-
-    setBaseGrid() {
-        const size = 100;
-        const divisions = 100;
-        const gridHelper = new THREE.GridHelper(size, divisions, "#0c0c0c", "#0a0a0a");
-        this.scene.add(gridHelper);
     }
 
     async init() {
