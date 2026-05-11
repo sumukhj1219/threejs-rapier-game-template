@@ -37,7 +37,7 @@ export default class Ground {
             t.magFilter = THREE.LinearFilter;
             t.anisotropy = maxAnisotropy; 
         });
-
+        
         colorTexture.encoding = THREE.sRGBEncoding
         aoTexture.encoding = THREE.LinearEncoding
         displacementTexture.encoding = THREE.LinearEncoding

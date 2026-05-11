@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Experience from './Experience';
 import flashVertexShader from "../Shaders/weapons/flash-vertex.glsl"
 import flashFragShader from "../Shaders/weapons/flash-frag.glsl"
-
+import gsap from 'gsap';
 
 export default class Weapon {
     static instance
@@ -116,7 +116,51 @@ export default class Weapon {
     }
 
     reload() {
-        this.currentAmmo = this.maxAmmo;
+        if (this.isReloading) return;
+        this.isReloading = true;
+
+        const tl = gsap.timeline({
+            onComplete: () => { this.isReloading = false; }
+        });
+
+        tl.to(this.container.position, {
+            y: -0.4,
+            duration: 0.3,
+            ease: "power2.inOut"
+        });
+
+        tl.to(this.container.rotation, {
+            x: Math.PI / 8,
+            duration: 0.65,
+            ease: "power2.inOut"
+        }, "<"); 
+
+        tl.to(this.container.rotation, {
+            z: -Math.PI / 2,
+            duration: 0.65,
+            ease: "power2.inOut"
+        }, "<"); 
+
+        tl.to(this.container.position, {
+            z: 1.25,
+            duration: 0.65,
+            ease: "power2.inOut"
+        }, "<"); 
+
+
+        tl.add(() => { this.currentAmmo = this.maxAmmo; }, "+=0.1");
+
+        tl.to(this.container.position, {
+            y: 0,
+            duration: 0.2,
+            ease: "back.out(1.7)" 
+        });
+
+        tl.to(this.container.rotation, {
+            x: 0,
+            duration: 0.2,
+            ease: "power2.out"
+        }, "<");
     }
 
 
