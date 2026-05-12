@@ -62,7 +62,7 @@ export default class Ground {
         this.meshInstance.rotation.x = -Math.PI * 0.5
         this.scene.add(this.meshInstance)
     }
-
+    
     setPhysics() {
         let bodyDesc = RAPIER.RigidBodyDesc.fixed()
         let body = this.physicsWorld.createRigidBody(bodyDesc)

@@ -9,8 +9,9 @@ export default class Environment {
 
         this.lights()
         this.hdriDaySky()
+        this.fog()
     }
-
+    
     lights() {
         const dirLight = new THREE.DirectionalLight(new THREE.Color("white"), 1)
         dirLight.position.set(10, 10, 10)
@@ -24,5 +25,9 @@ export default class Environment {
             this.scene.background = texture;
             this.scene.environment = texture;
         })
+    }
+    
+    fog() {
+        this.scene.fog = new THREE.FogExp2(new THREE.Color("white"), 0.01)
     }
 }
