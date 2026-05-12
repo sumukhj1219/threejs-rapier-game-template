@@ -60,6 +60,7 @@ export default class Ground {
 
         this.meshInstance = new THREE.Mesh(groundGeo, groundMat)
         this.meshInstance.rotation.x = -Math.PI * 0.5
+        this.meshInstance.receiveShadow = true
         this.scene.add(this.meshInstance)
     }
     

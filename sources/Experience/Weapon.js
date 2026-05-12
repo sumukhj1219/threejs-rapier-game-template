@@ -48,6 +48,8 @@ export default class Weapon {
                     node.material.metalness = 1;
                 }
             });
+            this.gun.castShadow = true;
+            this.gun.receiveShadow = true;
 
             this.container.add(this.gun);
             this.camera.add(this.container);
@@ -218,7 +220,7 @@ export default class Weapon {
 
         this.bullets.push({
             mesh: bulletGroup,
-            velocity: new THREE.Vector3(0, 0, -1.5)
+            velocity: new THREE.Vector3(0, 0, -3.0)
         });
 
         this.flashMuzzle();
