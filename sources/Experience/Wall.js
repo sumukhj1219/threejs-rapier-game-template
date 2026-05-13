@@ -50,7 +50,7 @@ export default class Wall {
             this.meshInstance.scale.set(5.25, 10, 5.25)
             this.meshInstance.updateMatrixWorld(true)
             this.meshInstance.traverse((node) => {
-                if (node.isMesh) {
+                if (node.isMesh && node.name.includes("Cube")) {
                     node.material = new THREE.MeshStandardMaterial({
                         map: colorTexture,
                         normalMap: normalTexture,
@@ -64,6 +64,28 @@ export default class Wall {
                     node.castShadow = true
                     node.receiveShadow = true
                     this.setPhysics(node)
+                }
+                else if (node.isMesh && node.name.includes("Tv")) {
+                    const collageTexture = loader.load("/assets/collage.jpg")
+                    collageTexture.wrapS = collageTexture.wrapT = THREE.RepeatWrapping
+                    collageTexture.repeat.set(10, 10)
+                    collageTexture.needsUpdate = true
+                    node.material = new THREE.MeshStandardMaterial({
+                        map: collageTexture,
+                        metalness: 0.5,
+                        roughness: 0.5,
+                    })
+                    node.castShadow = true
+                    node.receiveShadow = true
+                } else {
+                    node.material = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color("black"),
+                        metalness: 0.5,
+                        roughness: 0.5,
+                        side: THREE.DoubleSide
+                    })
+                    node.castShadow = true
+                    node.receiveShadow = true
                 }
             })
             this.scene.add(this.meshInstance)
