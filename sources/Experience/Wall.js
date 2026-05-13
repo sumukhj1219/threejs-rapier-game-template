@@ -47,6 +47,8 @@ export default class Wall {
         const gltfLoader = new GLTFLoader()
         gltfLoader.load("/model/wall.glb", (gltf) => {
             this.meshInstance = gltf.scene
+            this.meshInstance.scale.set(5.25, 10, 5.25)
+            this.meshInstance.updateMatrixWorld(true)
             this.meshInstance.traverse((node) => {
                 if (node.isMesh) {
                     node.material = new THREE.MeshStandardMaterial({
@@ -61,10 +63,33 @@ export default class Wall {
                     })
                     node.castShadow = true
                     node.receiveShadow = true
+                    this.setPhysics(node)
                 }
             })
-            this.meshInstance.scale.set(5.25, 10, 5.25)
             this.scene.add(this.meshInstance)
         })
+    }
+
+    setPhysics(mesh) {
+        const bbox = new THREE.Box3().setFromObject(mesh)
+
+        const size = new THREE.Vector3()
+        bbox.getSize(size)
+
+        const center = new THREE.Vector3()
+        bbox.getCenter(center)
+
+        let bodyDesc = RAPIER.RigidBodyDesc.fixed()
+            .setTranslation(center.x, center.y, center.z)
+
+        let body = this.physicsWorld.createRigidBody(bodyDesc)
+
+        let colliderDesc = RAPIER.ColliderDesc.cuboid(
+            size.x / 2,
+            size.y / 2,
+            size.z / 2
+        )
+
+        this.physicsWorld.createCollider(colliderDesc, body)
     }
 }
