@@ -8,8 +8,8 @@ export default class Environment {
         this.scene = this.experience.scene
 
         this.lights()
-        this.hdriDaySky()
-        this.fog()
+        // this.hdriDaySky()
+        // this.fog()
     }
 
     lights() {

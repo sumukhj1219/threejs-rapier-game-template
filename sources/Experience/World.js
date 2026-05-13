@@ -7,6 +7,7 @@ import Ground from './Ground.js'
 import View from './View.js'
 import Weapon from './Weapon.js'
 import Wall from './Wall.js'
+import Blast from './Blast.js'
 
 export default class World {
     constructor(_options) {
@@ -20,15 +21,16 @@ export default class World {
 
     async init() {
         this.physics = new Physics()
-        await this.physics.init() 
+        await this.physics.init()
 
         this.environment = new Environment()
 
-        this.ground = new Ground()
-        this.player = new Player()
-        this.view = new View()
-        this.weapon = new Weapon()
-        this.wall = new Wall()
+        // this.ground = new Ground()
+        // this.player = new Player()
+        // this.view = new View()
+        // this.weapon = new Weapon()
+        // this.wall = new Wall()
+        this.blast = new Blast()
 
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
@@ -44,6 +46,7 @@ export default class World {
         if (this.physics) this.physics.update()
         if (this.view) this.view.update()
         if (this.player) this.player.update()
+        if (this.blast) this.blast.update()
     }
 
     destroy() {

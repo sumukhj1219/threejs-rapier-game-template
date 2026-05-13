@@ -55,7 +55,7 @@ export default class Ground {
             aoMapIntensity: 1,
             displacementMap: displacementTexture,
             displacementScale: 0.1,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
         })
 
         this.meshInstance = new THREE.Mesh(groundGeo, groundMat)
