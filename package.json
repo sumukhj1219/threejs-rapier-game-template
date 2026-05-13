@@ -14,7 +14,7 @@
     "stats.js": "^0.17.0",
     "stylus": "^0.58.1",
     "three": "^0.141.0",
-    "three-custom-shader-material": "6.4",
+    "three-custom-shader-material": "5.4",
     "vite": "^2.9.12",
     "vite-plugin-glsl": "^0.1.2"
   }

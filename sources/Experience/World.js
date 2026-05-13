@@ -25,12 +25,11 @@ export default class World {
 
         this.environment = new Environment()
 
-        // this.ground = new Ground()
-        // this.player = new Player()
-        // this.view = new View()
-        // this.weapon = new Weapon()
-        // this.wall = new Wall()
-        this.blast = new Blast()
+        this.ground = new Ground()
+        this.player = new Player()
+        this.view = new View()
+        this.weapon = new Weapon()
+        this.wall = new Wall()
 
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {

@@ -4,6 +4,7 @@ import Experience from './Experience';
 import flashVertexShader from "../Shaders/weapons/flash-vertex.glsl"
 import flashFragShader from "../Shaders/weapons/flash-frag.glsl"
 import gsap from 'gsap';
+import Blast from './Blast';
 
 export default class Weapon {
     static instance
@@ -135,19 +136,19 @@ export default class Weapon {
             x: Math.PI / 8,
             duration: 0.65,
             ease: "power2.inOut"
-        }, "<"); 
+        }, "<");
 
         tl.to(this.container.rotation, {
             z: -Math.PI / 2,
             duration: 0.65,
             ease: "power2.inOut"
-        }, "<"); 
+        }, "<");
 
         tl.to(this.container.position, {
             z: 1.25,
             duration: 0.65,
             ease: "power2.inOut"
-        }, "<"); 
+        }, "<");
 
 
         tl.add(() => { this.currentAmmo = this.maxAmmo; }, "+=0.1");
@@ -155,7 +156,7 @@ export default class Weapon {
         tl.to(this.container.position, {
             y: 0,
             duration: 0.2,
-            ease: "back.out(1.7)" 
+            ease: "back.out(1.7)"
         });
 
         tl.to(this.container.rotation, {
@@ -196,6 +197,7 @@ export default class Weapon {
         if (this.currentAmmo <= 0) return;
         this.currentAmmo--;
 
+        this.blast = new Blast()
         const bulletGroup = new THREE.Group();
 
         const coreGeom = new THREE.CylinderGeometry(0.01, 0.01, 0.8);
@@ -241,5 +243,7 @@ export default class Weapon {
         this.breathe()
         this.slidePose()
         this.sprintPose()
+        if (this.blast)
+            this.blast.update()
     }
 }
