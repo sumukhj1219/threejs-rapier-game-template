@@ -36,10 +36,11 @@ export default class Blast {
                     uColorDark: { value: new THREE.Color("#cc0000") },
                     uBloom: { value: 5.0 }
                 },
-                blending: 1.5,
+                blending: 2,
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
+            
 
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
@@ -54,6 +55,7 @@ export default class Blast {
         }
 
         this.group.position.set(0, 5, 0)
+        this.explodeEffect();
     }
 
     explodeEffect() {
@@ -95,6 +97,5 @@ export default class Blast {
             sphere.material.uniforms.uTime.value += 0.01;
         });
         this.group.position.y += 0.005;
-        this.explodeEffect();
     }
 }

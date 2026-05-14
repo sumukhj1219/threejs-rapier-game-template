@@ -65,27 +65,8 @@ export default class Wall {
                     node.receiveShadow = true
                     this.setPhysics(node)
                 }
-                else if (node.isMesh && node.name.includes("Tv")) {
-                    const collageTexture = loader.load("/assets/collage.jpg")
-                    collageTexture.wrapS = collageTexture.wrapT = THREE.RepeatWrapping
-                    collageTexture.repeat.set(10, 10)
-                    collageTexture.needsUpdate = true
-                    node.material = new THREE.MeshStandardMaterial({
-                        map: collageTexture,
-                        metalness: 0.5,
-                        roughness: 0.5,
-                    })
-                    node.castShadow = true
-                    node.receiveShadow = true
-                } else {
-                    node.material = new THREE.MeshStandardMaterial({
-                        color: new THREE.Color("black"),
-                        metalness: 0.5,
-                        roughness: 0.5,
-                        side: THREE.DoubleSide
-                    })
-                    node.castShadow = true
-                    node.receiveShadow = true
+                else if (node.isMesh && (node.name.includes("Plane") || node.name.includes("Tv"))) {
+                    node.visible = false
                 }
             })
             this.scene.add(this.meshInstance)
