@@ -22,7 +22,7 @@ export default class Renderer
             this.debugFolder = this.debug.addFolder('renderer')
         }
         
-        this.usePostprocess = false
+        this.usePostprocess = true
 
         this.setInstance()
         this.setPostProcess()
@@ -117,7 +117,7 @@ export default class Renderer
         this.postProcess.renderPass = new RenderPass(this.scene, this.camera.instance)
 
         /**
-         * Effect composer
+         * Effect composerz
          */
         this.renderTarget = new THREE.WebGLRenderTarget(
             this.config.width,

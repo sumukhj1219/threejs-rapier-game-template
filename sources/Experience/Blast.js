@@ -38,7 +38,8 @@ export default class Blast {
                     uColorBright: { value: new THREE.Color("#ff6600") },
                     uColorDark: { value: new THREE.Color("#cc0000") },
                 },
-                blending: 2.0,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
