@@ -13,9 +13,9 @@ void main() {
     float life = noise * uStrength;
 
     vec3 colorWhite  = vec3(1.0, 1.0, 0.9);  
-    vec3 colorYellow = vec3(1.0, 0.8, 0.0) * uBloom; 
+    vec3 colorYellow = vec3(1.0, 0.8, 0.0); 
     vec3 colorOrange = uColorBright;          
-    vec3 colorRed    = uColorDark * uBloom;        
+    vec3 colorRed    = uColorDark;        
     vec3 colorGray   = vec3(0.1, 0.1, 0.1);   
     
     float yellowMask = smoothstep(0.6, 0.65, life);

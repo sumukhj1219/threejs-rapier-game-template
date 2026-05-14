@@ -4,6 +4,8 @@ import RAPIER from "@dimforge/rapier3d-compat";
 
 import blastVertexShader from '../Shaders/blast/blast-vertex.glsl'
 import blastFragmentShader from '../Shaders/blast/blast-frag.glsl'
+import waveVertexShader from '../Shaders/waveImpact/waveImpact-vertex.glsl'
+import waveFragmentShader from '../Shaders/waveImpact/waveImpact-frag.glsl'
 import gsap from 'gsap';
 
 export default class Blast {
@@ -21,6 +23,7 @@ export default class Blast {
     init() {
         const textureLoader = new THREE.TextureLoader()
         const blastTexture = textureLoader.load('/noise/perlin.png')
+        const waveTexture = textureLoader.load('/noise/perlin.png')
 
         const blastGeometry = new THREE.SphereGeometry(0.15, 64, 64)
 
@@ -34,13 +37,11 @@ export default class Blast {
                     uTime: { value: Math.random() * 0.05 * i },
                     uColorBright: { value: new THREE.Color("#ff6600") },
                     uColorDark: { value: new THREE.Color("#cc0000") },
-                    uBloom: { value: 5.0 }
                 },
-                blending: 2,
+                blending: 2.0,
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
-            
 
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
@@ -54,6 +55,22 @@ export default class Blast {
             this.spheres.push(mesh)
         }
 
+        const impactGeometry = new THREE.PlaneGeometry(10, 10, 64, 64)
+        const impactMaterial = new THREE.ShaderMaterial({
+            vertexShader: waveVertexShader,
+            fragmentShader: waveFragmentShader,
+            uniforms: {
+                uTime: { value: 0 },
+                uTexture: { value:  waveTexture},
+            },
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,  
+            side: THREE.DoubleSide,
+        })
+        this.impactMesh = new THREE.Mesh(impactGeometry, impactMaterial)
+        this.impactMesh.rotation.x = -Math.PI / 2
+        this.group.add(this.impactMesh)
+
         this.group.position.set(0, 5, 0)
         this.explodeEffect();
     }
@@ -62,10 +79,11 @@ export default class Blast {
         if (this.isExploding) return;
         this.isExploding = true;
 
-        const blastDuration = 1.5;
+        const blastDuration = 0.75;
         const tl = gsap.timeline({
             onComplete: () => { this.scene.remove(this.group); }
         });
+
 
         this.spheres.forEach((sphere) => {
             tl.to(sphere.scale, {
@@ -90,12 +108,14 @@ export default class Blast {
                 ease: "power1.inOut"
             }, 0);
         });
+
     }
 
     update() {
         this.spheres.forEach(sphere => {
             sphere.material.uniforms.uTime.value += 0.01;
         });
+        this.impactMesh.material.uniforms.uTime.value += 0.01;
         this.group.position.y += 0.005;
     }
 }
