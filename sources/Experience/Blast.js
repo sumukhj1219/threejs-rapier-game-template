@@ -26,6 +26,7 @@ export default class Blast {
         const waveTexture = textureLoader.load('/noise/perlin.png')
 
         const blastGeometry = new THREE.SphereGeometry(0.15, 64, 64)
+        // const splashGeometry = new THREE.PlaneGeometry(0.5, 1, 64, 64)
 
         for (let i = 0; i < 10; i++) {
             const blastMaterial = new THREE.ShaderMaterial({
@@ -44,15 +45,38 @@ export default class Blast {
                 side: THREE.DoubleSide,
             })
 
-            const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
+            // const splashMaterial = new THREE.ShaderMaterial({
+            //     vertexShader: blastVertexShader,
+            //     fragmentShader: blastFragmentShader,
+            //     uniforms: {
+            //         uStrength: { value: 1 },
+            //         uTexture: { value: blastTexture },
+            //         uTime: { value: Math.random() * 0.05 * i },
+            //         uColorBright: { value: new THREE.Color("#ff6600") },
+            //         uColorDark: { value: new THREE.Color("#cc0000") },
+            //     },
+            //     blending: THREE.AdditiveBlending,
+            //     transparent: true,
+            //     depthWrite: false,
+            //     side: THREE.DoubleSide,
+            // })
 
-            mesh.position.x = (Math.random() - 0.5) * 0.5
-            mesh.position.y = (Math.random() - 0.5) * 0.5
-            mesh.position.z = (Math.random() - 0.5) * 0.5
+            const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
+            // const splashMesh = new THREE.Mesh(splashGeometry, splashMaterial)
+
+            mesh.position.x = (Math.random() - 0.15) * 0.5
+            mesh.position.y = (Math.random() - 0.15) * 0.5
+            mesh.position.z = (Math.random() - 0.15) * 0.5
+
+            // splashMesh.position.x = (Math.random() - 0.15) * 0.25
+            // splashMesh.position.y = (Math.random() - 0.15) * 0.25
+            // splashMesh.position.z = (Math.random() - 0.15) * 0.25
 
             mesh.scale.set(0.01 * i, 0.01 * i, 0.01 * i)
+            // splashMesh.scale.set(0.01 * i, 0.01 * i, 0.01 * i)
             mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
             this.group.add(mesh)
+            // this.group.add(splashMesh)
             this.spheres.push(mesh)
         }
 
