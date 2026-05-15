@@ -9,10 +9,18 @@ export default class Drone {
 
         this.collisonDistance = 1
         this.hasBeenHit = false
+        this.droneSpeed = 0.1
+
         if (this.experience.world.weapon)
             this.bullets = this.experience.world.weapon.bullets
         else
             this.bullets = []
+
+        if (this.experience.world.wall.walls) {
+            this.walls = this.experience.world.wall.walls
+        } else {
+            this.walls = []
+        }
 
         this.init()
     }
@@ -25,6 +33,21 @@ export default class Drone {
         mesh.position.set(0, 5, 0)
         this.droneModel = mesh
         this.scene.add(mesh)
+    }
+
+    movements() {
+        const wallToDroneDistance = this.walls.map(wall => wall.position.distanceTo(this.droneModel.position))
+
+
+        if (wallToDroneDistance.some(distance => distance < this.collisonDistance * 2)) {
+            const closestWallIndex = wallToDroneDistance.indexOf(Math.min(...wallToDroneDistance))
+            const closestWall = this.walls[closestWallIndex]
+            const directionAwayFromWall = new THREE.Vector3().subVectors(this.droneModel.position, closestWall.position).normalize()
+            this.droneModel.position.add(directionAwayFromWall.multiplyScalar(0.02))
+        } else {
+            const randomDirection = new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize()
+            this.droneModel.position.add(randomDirection.multiplyScalar(0.01))
+        }
     }
 
     checkCollison() {
@@ -47,6 +70,7 @@ export default class Drone {
     update() {
         if (this.droneModel) {
             this.checkCollison()
+            this.movements()
         }
     }
 }

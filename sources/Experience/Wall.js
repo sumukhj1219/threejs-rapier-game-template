@@ -8,7 +8,7 @@ export default class Wall {
         this.experience = new Experience()
         this.scene = this.experience.scene
         this.physicsWorld = this.experience.world.physics.world
-
+        this.walls=[]
         this.init()
     }
 
@@ -64,6 +64,7 @@ export default class Wall {
                     node.castShadow = true
                     node.receiveShadow = true
                     this.setPhysics(node)
+                    this.walls.push(node)
                 }
                 else if (node.isMesh && (node.name.includes("Plane") || node.name.includes("Tv"))) {
                     node.visible = false
