@@ -46,7 +46,7 @@ export default class Blast {
 
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
-            const distance = 0.5; 
+            const distance = 0.75; 
             const phi = Math.random() * Math.PI * 2;
             const theta = Math.acos(2 * Math.random() - 1);
 
@@ -92,17 +92,17 @@ export default class Blast {
 
         this.spheres.forEach((sphere) => {
             tl.to(sphere.scale, {
-                x: 6,
-                y: 6,
-                z: 6,
+                x: 12,
+                y: 12,
+                z: 12,
                 duration: 0.4,
                 ease: "expo.out"
             }, 0);
 
             tl.to(sphere.scale, {
-                x: 8,
-                y: 8,
-                z: 8,
+                x: 14,
+                y: 14,
+                z: 14,
                 duration: blastDuration - 0.2,
                 ease: "linear"
             }, 0.2);

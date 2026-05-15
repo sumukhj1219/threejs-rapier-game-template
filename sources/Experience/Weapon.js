@@ -25,7 +25,7 @@ export default class Weapon {
         this.container.name = "weaponContainer";
 
         this.bullets = [];
-        this.maxAmmo = 10;
+        this.maxAmmo = 50;
         this.currentAmmo = this.maxAmmo;
 
         this.init();
@@ -222,7 +222,7 @@ export default class Weapon {
 
         this.bullets.push({
             mesh: bulletGroup,
-            velocity: new THREE.Vector3(0, 0, -3.0)
+            velocity: new THREE.Vector3(0, 0, -1.5)
         });
 
         this.flashMuzzle();
@@ -234,7 +234,7 @@ export default class Weapon {
 
             b.mesh.position.add(b.velocity);
 
-            if (b.mesh.position.z < -50) {
+            if (b.mesh.position.z < -100) {
                 this.container.remove(b.mesh);
                 this.bullets.splice(i, 1);
             }

@@ -1,76 +1,161 @@
 import * as THREE from 'three'
 import Experience from "./Experience.js"
 import Blast from './Blast.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default class Drone {
     constructor(_options) {
+        console.log('[Drone] Constructor called')
         this.experience = new Experience()
         this.scene = this.experience.scene
-
-        this.collisonDistance = 1
+        
+        this.collisonDistance = 1.0
         this.hasBeenHit = false
-        this.droneSpeed = 0.1
+        this.droneSpeed = 0.75
+        this.progress = 0
+        this.pathMesh = null
+        this.curve = null
 
-        if (this.experience.world.weapon)
-            this.bullets = this.experience.world.weapon.bullets
-        else
-            this.bullets = []
-
-        if (this.experience.world.wall.walls) {
-            this.walls = this.experience.world.wall.walls
-        } else {
-            this.walls = []
+        this.bullets = this.experience.world?.weapon?.bullets || []
+        
+        if (this.experience.world?.wall?.path) {
+            this.pathMesh = this.experience.world.wall.path
+            this.setupPath()
         }
 
         this.init()
     }
 
+    checkForPath() {
+        if (this.curve) return
+        const wall = this.experience.world?.wall
+        if (!wall || !wall.path) return
+
+        console.log('[Drone] Path found! Setting up curve')
+        this.pathMesh = wall.path
+        this.setupPath()
+    }
+
     init() {
-        const geometry = new THREE.CapsuleGeometry(0.15, 0.15, 32)
-        geometry.rotateX(Math.PI / 2)
-        const material = new THREE.MeshStandardMaterial({ color: '#2a2a2a' })
-        const mesh = new THREE.Mesh(geometry, material)
-        mesh.position.set(0, 5, 0)
-        this.droneModel = mesh
-        this.scene.add(mesh)
+        const gltfLoader = new GLTFLoader()
+        gltfLoader.load("/model/drone.glb", (gltf) => {
+            this.droneModel = gltf.scene
+            this.droneModel.traverse((node) => {        
+                if (node.isMesh) {
+                    node.material.color.set(new THREE.Color("#2a2a2b"))
+                    node.material.roughness = 0.5
+                    node.material.metalness = 1
+                    node.castShadow = true
+                    node.receiveShadow = true
+                    node.rotateY = Math.PI
+                }
+            })
+            this.droneModel.position.set(0, 5, 0)
+            this.droneModel.scale.set(0.5, 0.5, 0.5)
+            this.scene.add(this.droneModel)
+        })
+    }
+
+    setupPath() {
+        if (!this.pathMesh || !this.pathMesh.geometry) {
+            console.log('[Drone] No pathMesh or geometry, returning')
+            return
+        }
+
+        const positions = this.pathMesh.geometry.attributes.position.array
+        const points = []
+
+        console.log('[Drone] Path has', positions.length / 3, 'vertices')
+        this.pathMesh.updateMatrixWorld()
+        
+        for (let i = 0; i < positions.length; i += 3) {
+            const v = new THREE.Vector3(
+                positions[i], 
+                positions[i + 1], 
+                positions[i + 2]
+            )
+            v.applyMatrix4(this.pathMesh.matrixWorld)
+            points.push(v)
+        }
+
+        this.curve = new THREE.CatmullRomCurve3(points, true)
+        this.curve.curveType = 'centripetal'
     }
 
     movements() {
-        const wallToDroneDistance = this.walls.map(wall => wall.position.distanceTo(this.droneModel.position))
-
-
-        if (wallToDroneDistance.some(distance => distance < this.collisonDistance * 2)) {
-            const closestWallIndex = wallToDroneDistance.indexOf(Math.min(...wallToDroneDistance))
-            const closestWall = this.walls[closestWallIndex]
-            const directionAwayFromWall = new THREE.Vector3().subVectors(this.droneModel.position, closestWall.position).normalize()
-            this.droneModel.position.add(directionAwayFromWall.multiplyScalar(0.02))
-        } else {
-            const randomDirection = new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize()
-            this.droneModel.position.add(randomDirection.multiplyScalar(0.01))
+        if (!this.curve) {
+            if (!this.loggedNoCurve) {
+                this.loggedNoCurve = true
+            }
+            return
         }
+        if (this.hasBeenHit || !this.droneModel) return
+
+        this.progress += 0.0005 * this.droneSpeed 
+        if (this.progress > 1) this.progress = 0
+
+        const currentPos = this.curve.getPointAt(this.progress)
+        this.droneModel.position.copy(currentPos)
+
+        const lookAtTarget = this.curve.getPointAt((this.progress + 0.01) % 1)
+        this.droneModel.lookAt(lookAtTarget)
+
+        const time = Date.now() * 0.002
+        
+        this.droneModel.position.y += Math.sin(time) * 0.05
+        
+        const tangent = this.curve.getTangentAt(this.progress)
+        this.droneModel.rotation.z = -tangent.x * 0.8 
     }
 
     checkCollison() {
-        const worldPos = new THREE.Vector3()
+        if (this.hasBeenHit || !this.droneModel) return
+
+        const bulletPos = new THREE.Vector3()
 
         this.bullets.forEach((bullet) => {
-            const target = bullet?.mesh ?? bullet
-            if (!target || typeof target.getWorldPosition !== 'function') return
+            const bMesh = bullet?.mesh ?? bullet
+            if (!bMesh || typeof bMesh.getWorldPosition !== 'function') return
 
-            target.getWorldPosition(worldPos)
-            const distance = worldPos.distanceTo(this.droneModel.position)
-            if (distance < this.collisonDistance && !this.hasBeenHit) {
-                this.hasBeenHit = true
-                this.blast = new Blast(worldPos)
-                this.scene.remove(this.droneModel)
+            bMesh.getWorldPosition(bulletPos)
+            
+            const dist = bulletPos.distanceTo(this.droneModel.position)
+            
+            if (dist < this.collisonDistance) {
+                this.die(bulletPos)
             }
         })
     }
 
+    die(impactPoint) {
+        this.hasBeenHit = true
+        
+        if (typeof Blast === 'function') {
+            this.blast = new Blast(impactPoint)
+        }
+        
+        this.scene.remove(this.droneModel)
+        
+        this.droneModel.traverse((node) => {
+            if (node.geometry) {
+                node.geometry.dispose()
+            }
+            if (node.material) {
+                if (Array.isArray(node.material)) {
+                    node.material.forEach(mat => mat.dispose())
+                } else {
+                    node.material.dispose()
+                }
+            }
+        })
+        
+    }
+
     update() {
-        if (this.droneModel) {
-            this.checkCollison()
+        if (!this.hasBeenHit) {
+            this.checkForPath()
             this.movements()
+            this.checkCollison()
         }
     }
 }
