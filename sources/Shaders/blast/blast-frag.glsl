@@ -16,8 +16,8 @@ void main() {
     vec3 neonWhite = vec3(1.0, 1.0, 1.0);
     
     float outerGlowMask = smoothstep(0.0, 0.5, life);
-    float innerGlowMask = smoothstep(0.4, 0.7, life);
-    float coreMask = smoothstep(0.7, 1.0, life);
+    float innerGlowMask = smoothstep(0.6, 0.7, life);
+    float coreMask = smoothstep(0.8, 1.0, life);
 
     vec3 finalColor = mix(vec3(0.0), neonRed, outerGlowMask);
     finalColor = mix(finalColor, neonYellow, innerGlowMask);

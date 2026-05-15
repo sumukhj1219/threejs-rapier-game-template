@@ -4,7 +4,6 @@ import Experience from './Experience';
 import flashVertexShader from "../Shaders/weapons/flash-vertex.glsl"
 import flashFragShader from "../Shaders/weapons/flash-frag.glsl"
 import gsap from 'gsap';
-import Blast from './Blast';
 
 export default class Weapon {
     static instance
@@ -18,7 +17,7 @@ export default class Weapon {
         this.experience = new Experience();
         this.scene = this.experience.scene;
         this.camera = this.experience.camera.instance;
-
+        
         const oldContainer = this.camera.getObjectByName("weaponContainer");
         if (oldContainer) this.camera.remove(oldContainer);
 
@@ -197,7 +196,8 @@ export default class Weapon {
         if (this.currentAmmo <= 0) return;
         this.currentAmmo--;
 
-        this.blast = new Blast()
+
+
         const bulletGroup = new THREE.Group();
 
         const coreGeom = new THREE.CylinderGeometry(0.01, 0.01, 0.8);
@@ -243,7 +243,5 @@ export default class Weapon {
         this.breathe()
         this.slidePose()
         this.sprintPose()
-        if (this.blast)
-            this.blast.update()
     }
 }

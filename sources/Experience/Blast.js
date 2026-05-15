@@ -9,13 +9,13 @@ import waveFragmentShader from '../Shaders/waveImpact/waveImpact-frag.glsl'
 import gsap from 'gsap';
 
 export default class Blast {
-    constructor(_options) {
+    constructor(position) {
         this.experience = new Experience()
         this.scene = this.experience.scene
-        this.spheres = [] 
+        this.spheres = []
         this.group = new THREE.Group()
         this.scene.add(this.group)
-
+        this.blastPosition = position
 
         this.init()
     }
@@ -32,11 +32,11 @@ export default class Blast {
                 vertexShader: blastVertexShader,
                 fragmentShader: blastFragmentShader,
                 uniforms: {
-                    uStrength: { value: 1 },
+                    uStrength: { value: 1.25 },
                     uTexture: { value: blastTexture },
                     uTime: { value: Math.random() * 0.05 * i },
                     uColorBright: { value: new THREE.Color("#ff6600") },
-                    uColorDark: { value: new THREE.Color("#cc0000") },
+                    uColorDark: { value: new THREE.Color("#fcd200") },
                 },
                 blending: THREE.AdditiveBlending,
                 transparent: true,
@@ -46,9 +46,13 @@ export default class Blast {
 
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
-            mesh.position.x = (Math.random() - 0.15) * 0.5
-            mesh.position.y = (Math.random() - 0.15) * 0.5
-            mesh.position.z = (Math.random() - 0.15) * 0.5
+            const distance = 0.5; 
+            const phi = Math.random() * Math.PI * 2;
+            const theta = Math.acos(2 * Math.random() - 1);
+
+            mesh.position.x = distance * Math.sin(theta) * Math.cos(phi);
+            mesh.position.y = distance * Math.sin(theta) * Math.sin(phi);
+            mesh.position.z = distance * Math.cos(theta);
 
             mesh.scale.set(0.01 * i, 0.01 * i, 0.01 * i)
             mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
@@ -62,17 +66,17 @@ export default class Blast {
             fragmentShader: waveFragmentShader,
             uniforms: {
                 uTime: { value: 0 },
-                uTexture: { value:  waveTexture},
+                uTexture: { value: waveTexture },
             },
             blending: THREE.AdditiveBlending,
-            depthWrite: false,  
+            depthWrite: false,
             side: THREE.DoubleSide,
         })
         this.impactMesh = new THREE.Mesh(impactGeometry, impactMaterial)
         this.impactMesh.rotation.x = -Math.PI / 2
         this.group.add(this.impactMesh)
 
-        this.group.position.set(0, 5, 0)
+        this.group.position.copy(this.blastPosition)
         this.explodeEffect();
     }
 
@@ -80,7 +84,7 @@ export default class Blast {
         if (this.isExploding) return;
         this.isExploding = true;
 
-        const blastDuration = 0.75;
+        const blastDuration = 0.5;
         const tl = gsap.timeline({
             onComplete: () => { this.scene.remove(this.group); }
         });
@@ -99,9 +103,9 @@ export default class Blast {
                 x: 8,
                 y: 8,
                 z: 8,
-                duration: blastDuration - 0.4,
+                duration: blastDuration - 0.2,
                 ease: "linear"
-            }, 0.4);
+            }, 0.2);
 
             tl.to(sphere.material.uniforms.uStrength, {
                 value: 0,
