@@ -20,6 +20,12 @@ export default class Drone {
 
         this.bullets = this.experience.world?.weapon?.bullets || []
         
+        this.droneBullets = []
+        this.shootCooldown = 0
+        this.shootCooldownMax = 1.5
+        this.shootDistance = 50
+        this.blasterPosition = new THREE.Vector3()
+        
         this.init()
     }
 
@@ -39,6 +45,9 @@ export default class Drone {
                     node.material.metalness = 1
                     node.castShadow = true
                     node.receiveShadow = true
+                } 
+                if (node.name.includes("Blaster")) {
+                    this.blaster = node
                 }
             })
             
@@ -106,10 +115,131 @@ export default class Drone {
             gsap.to(this.droneModel.rotation, {
                 z: this.droneModel.rotation.z + Math.PI * 2,
                 duration: 0.75,
-                ease: "power2.inOut"
+                ease: "power2.inOut",
             })
         }
     }
+
+
+    aimAtPlayer() {
+        if (!this.blaster || !this.droneGroup) return
+        
+        const player = this.experience.world?.player
+        if (!player || !player.meshInstance) return
+        
+        const playerPos = player.meshInstance.position
+        const blasterWorldPos = new THREE.Vector3()
+        this.blaster.getWorldPosition(blasterWorldPos)
+        
+        // Direction from blaster to player
+        const directionToPlayer = new THREE.Vector3()
+        directionToPlayer.subVectors(playerPos, blasterWorldPos)
+        directionToPlayer.normalize()
+        
+        // Calculate yaw angle to look at player
+        const yawAngle = Math.atan2(directionToPlayer.x, directionToPlayer.z)
+        
+        // Apply yaw rotation to the blaster
+        this.blaster.rotation.y = yawAngle
+    }
+
+    shootAtPlayer() {
+        if (!this.blaster || !this.droneGroup) {
+            this.shootCooldown = 0
+            return
+        }
+        
+        const player = this.experience.world?.player
+        if (!player || !player.meshInstance) return
+        
+        this.shootCooldown -= 16 // Decrease cooldown each frame (assuming 60fps)
+        
+        // Check distance to player
+        const playerPos = player.meshInstance.position
+        const distance = this.droneGroup.position.distanceTo(playerPos)
+        
+        if (distance > this.shootDistance || this.shootCooldown > 0) return
+        
+        // Reset cooldown
+        this.shootCooldown = this.shootCooldownMax
+        
+        // Create bullet similar to player weapon
+        const bulletGroup = new THREE.Group()
+        
+        const coreGeom = new THREE.CylinderGeometry(0.01, 0.01, 0.8)
+        coreGeom.rotateX(Math.PI / 2)
+        const coreMat = new THREE.MeshBasicMaterial({ color: "#ffff00" })
+        const core = new THREE.Mesh(coreGeom, coreMat)
+        
+        const glowGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.85)
+        glowGeom.rotateX(Math.PI / 2)
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: "#ffff00",
+            transparent: true,
+            opacity: 0.5,
+            blending: THREE.AdditiveBlending
+        })
+        const glow = new THREE.Mesh(glowGeom, glowMat)
+        
+        bulletGroup.add(core, glow)
+        
+        const blasterWorldPos = new THREE.Vector3()
+        this.blaster.getWorldPosition(blasterWorldPos)
+        bulletGroup.position.copy(blasterWorldPos)
+        
+        this.scene.add(bulletGroup)
+        
+        // Direction toward player
+        const directionToPlayer = new THREE.Vector3()
+        directionToPlayer.subVectors(playerPos, blasterWorldPos)
+        directionToPlayer.normalize()
+        
+        this.droneBullets.push({
+            mesh: bulletGroup,
+            velocity: directionToPlayer.multiplyScalar(1.2),
+            direction: directionToPlayer.clone()
+        })
+    }
+
+    updateDroneBullets() {
+        for (let i = this.droneBullets.length - 1; i >= 0; i--) {
+            const b = this.droneBullets[i]
+            
+            b.mesh.position.add(b.velocity)
+            
+            // Remove bullet if it's too far away
+            if (b.mesh.position.distanceTo(this.droneGroup.position) > 100) {
+                this.scene.remove(b.mesh)
+                this.droneBullets.splice(i, 1)
+            }
+        }
+    }
+
+    checkCollisionWithPlayer() {
+        const player = this.experience.world?.player
+        if (!player || !player.meshInstance) return
+        
+        const playerPos = player.meshInstance.position
+        
+        for (let i = this.droneBullets.length - 1; i >= 0; i--) {
+            const b = this.droneBullets[i]
+            const bulletPos = b.mesh.position
+            
+            const dist = bulletPos.distanceTo(playerPos)
+            
+            if (dist < 1.5) {
+                // Player hit
+                this.scene.remove(b.mesh)
+                this.droneBullets.splice(i, 1)
+                
+                // Kill the player
+                if (player.die) {
+                    player.die()
+                }
+            }
+        }
+    }
+
 
     checkCollison() {
         if (this.hasBeenHit || !this.droneGroup) return
@@ -140,6 +270,10 @@ export default class Drone {
             this.movements()
             this.checkCollison()
             this.animate()
+            this.aimAtPlayer()
+            this.shootAtPlayer()
+            this.updateDroneBullets()
+            this.checkCollisionWithPlayer()
         }
     }
 }

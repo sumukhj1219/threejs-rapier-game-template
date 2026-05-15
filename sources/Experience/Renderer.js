@@ -32,7 +32,6 @@ export default class Renderer
     {
         this.clearColor = '#010101'
 
-        // Renderer
         this.instance = new THREE.WebGLRenderer({
             alpha: false,
             antialias: true
