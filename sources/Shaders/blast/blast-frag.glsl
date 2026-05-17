@@ -1,5 +1,7 @@
-uniform vec3 uColorBright; 
-uniform vec3 uColorDark;   
+uniform vec3 uColorBright; // White Core
+uniform vec3 uColorMid;    // Neon Fire Red/Orange
+uniform vec3 uColorDark;   // Black Smog
+
 uniform float uStrength;  
 uniform sampler2D uTexture;
 uniform float uTime;
@@ -9,23 +11,28 @@ varying vec2 vUv;
 void main() {
     float noise = texture2D(uTexture, vUv).r;
     
+    // Create an aggressive, stepped noise value for sharp cel-shading profiles
     float life = noise * uStrength;
 
-    vec3 neonRed = vec3(1.0, 0.0, 0.2);
-    vec3 neonYellow = vec3(1.0, 0.9, 0.1);
-    vec3 neonWhite = vec3(1.0, 1.0, 1.0);
+    // Strict, narrow masks to form harsh "cel" bands rather than smooth gradients
+    float smokeMask = smoothstep(0.15, 0.25, life);
+    float fireMask  = smoothstep(0.45, 0.52, life);
+    float coreMask  = smoothstep(0.75, 0.82, life);
     
-    float outerGlowMask = smoothstep(0.0, 0.5, life);
-    float innerGlowMask = smoothstep(0.6, 0.7, life);
-    float coreMask = smoothstep(0.8, 1.0, life);
+    // Build up color layers (Default base is transparent background/black)
+    vec3 finalColor = uColorDark; // Base Layer: Black Smog
+    
+    // Mix in the sharp neon colors
+    finalColor = mix(finalColor, uColorMid, fireMask);
+    finalColor = mix(finalColor, uColorBright, coreMask);
 
-    vec3 finalColor = mix(vec3(0.0), neonRed, outerGlowMask);
-    finalColor = mix(finalColor, neonYellow, innerGlowMask);
-    finalColor = mix(finalColor, neonWhite, coreMask);
+    // Give the fire and core layers a fierce glow boost
+    if (fireMask > 0.1) {
+        finalColor *= 1.5;
+    }
 
-    finalColor *= 1.2; 
-
-    float alpha = smoothstep(0.1, 0.4, life) * uStrength;
+    // High contrast alpha thresholding for crisp, ink-like smoke borders
+    float alpha = smoothstep(0.12, 0.2, life) * uStrength;
 
     gl_FragColor = vec4(finalColor, alpha);
 }

@@ -22,31 +22,31 @@ export default class Blast {
 
     init() {
         const textureLoader = new THREE.TextureLoader()
-        const blastTexture = textureLoader.load('/noise/perlin.png')
-        const waveTexture = textureLoader.load('/noise/perlin.png')
+        const blastTexture = textureLoader.load('/noise/vornoi.jpg')
+        const waveTexture = textureLoader.load('/noise/vornoi.jpg')
 
         const blastGeometry = new THREE.SphereGeometry(0.15, 64, 64)
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 100; i++) {
             const blastMaterial = new THREE.ShaderMaterial({
                 vertexShader: blastVertexShader,
                 fragmentShader: blastFragmentShader,
                 uniforms: {
-                    uStrength: { value: 1.25 },
+                    uStrength: { value: 5 },
                     uTexture: { value: blastTexture },
-                    uTime: { value: Math.random() * 0.05 * i },
+                    uTime: { value: Math.random() },
                     uColorBright: { value: new THREE.Color("#ff6600") },
-                    uColorDark: { value: new THREE.Color("#fcd200") },
+                    uColorDark: { value: new THREE.Color("#c24f07") },
                 },
                 blending: THREE.AdditiveBlending,
-                transparent: true,
+                // transparent: true,
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
 
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
-            const distance = 0.75; 
+            const distance = 2.5; 
             const phi = Math.random() * Math.PI * 2;
             const theta = Math.acos(2 * Math.random() - 1);
 
@@ -84,7 +84,7 @@ export default class Blast {
         if (this.isExploding) return;
         this.isExploding = true;
 
-        const blastDuration = 0.5;
+        const blastDuration = 1;
         const tl = gsap.timeline({
             onComplete: () => { this.scene.remove(this.group); }
         });

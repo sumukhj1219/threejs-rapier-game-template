@@ -33,11 +33,19 @@ export default class World {
         this.wall = new Wall()
         this.drone = new Drone()
 
+
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
                 this.setBaseGrid()
             }
         })
+    }
+
+    setBaseGrid() {
+        const grid = new THREE.GridHelper(100, 100, new THREE.Color("#444"), new THREE.Color("#222"))   
+        grid.material.opacity = 0.5
+        grid.material.transparent = true
+        this.scene.add(grid)
     }
 
     resize() {
