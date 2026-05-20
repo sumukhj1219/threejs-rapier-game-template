@@ -60,7 +60,7 @@ export default class World {
         // if (this.blast) this.blast.update()
         // if (this.energy) this.energy.update()
         // if (this.drone) this.drone.update()
-
+        if (this.explosion) this.explosion.update()
     }
 
     destroy() {
