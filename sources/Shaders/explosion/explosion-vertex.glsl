@@ -13,7 +13,7 @@ void main() {
     vec4 noise = texture2D(uBaseTexture, vUv);
     vec3 newPosition = position;
 
-    float spikeCutoff = step(0.85, noise.r);
+    float spikeCutoff = step(0.25, noise.r);
     
     newPosition += normal * (spikeCutoff * uSpikeLength * uTime);
 

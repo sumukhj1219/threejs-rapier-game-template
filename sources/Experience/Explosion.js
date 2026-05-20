@@ -30,7 +30,7 @@ export default class Explosion {
                 uBaseTexture: { value: vertNoiseTex },
                 uTime: { value: 0 },
                 uGrowth: { value: 1 },
-                uSpikeLength: { value: 1.5 },
+                uSpikeLength: { value: 0.25 },
                 uRandomSeed: { value: 100 * Math.random() },
             }
         })
