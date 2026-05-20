@@ -144,7 +144,7 @@ export default class Resources extends EventEmitter
             }
         }
     }
-
+    
     /**
      * File load end
      */

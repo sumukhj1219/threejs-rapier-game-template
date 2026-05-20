@@ -9,6 +9,7 @@
   "dependencies": {
     "@dimforge/rapier3d": "^0.19.3",
     "@dimforge/rapier3d-compat": "^0.19.3",
+    "@tsparticles/engine": "^4.0.5",
     "gsap": "^3.15.0",
     "lil-gui": "^0.16.1",
     "stats.js": "^0.17.0",

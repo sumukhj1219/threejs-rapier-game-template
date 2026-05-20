@@ -44,7 +44,7 @@ export default class Blast {
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
-
+            
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
             const distance = 2.5; 
