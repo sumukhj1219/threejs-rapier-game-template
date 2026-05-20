@@ -67,7 +67,7 @@ export default class Drone {
         this.pathMesh = wall.path
         this.setupPath()
     }
-
+                        
     setupPath() {
         if (!this.pathMesh || !this.pathMesh.geometry) return
 

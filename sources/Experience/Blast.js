@@ -37,13 +37,14 @@ export default class Blast {
                     uTime: { value: Math.random() },
                     uColorBright: { value: new THREE.Color("#ff6600") },
                     uColorDark: { value: new THREE.Color("#c24f07") },
+                    uColorMid: { value: new THREE.Color("#ff3300") },
                 },
                 blending: THREE.AdditiveBlending,
                 // transparent: true,
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
-
+            
             const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
 
             const distance = 2.5; 
