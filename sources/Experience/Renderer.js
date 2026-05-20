@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import Experience from './Experience.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+// 1. Import the Unreal Bloom Pass
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
 export default class Renderer
 {
@@ -116,8 +118,9 @@ export default class Renderer
         this.postProcess.renderPass = new RenderPass(this.scene, this.camera.instance)
 
         /**
-         * Effect composerz
+         * Effect composer
          */
+        // Note: For WebGL 2, format is updated to THREE.RGBAFormat for smooth alpha compositing
         this.renderTarget = new THREE.WebGLRenderTarget(
             this.config.width,
             this.config.height,
@@ -125,7 +128,7 @@ export default class Renderer
                 generateMipmaps: false,
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
-                format: THREE.RGBFormat,
+                format: THREE.RGBAFormat, 
                 encoding: THREE.sRGBEncoding,
                 samples: 2
             }
@@ -135,6 +138,31 @@ export default class Renderer
         this.postProcess.composer.setPixelRatio(this.config.pixelRatio)
 
         this.postProcess.composer.addPass(this.postProcess.renderPass)
+
+        /**
+         * 2. Unreal Bloom Pass Configured for Light/Subtle Bloom
+         */
+        const bloomResolution = new THREE.Vector2(this.config.width, this.config.height)
+        const bloomStrength = 0.8    // Default light glow intensity
+        const bloomRadius = 0.55     // Spread radius of the light leakage
+        const bloomThreshold = 0.85  // High threshold ensures only over-saturated fire pixels trigger bloom
+
+        this.postProcess.bloomPass = new UnrealBloomPass(
+            bloomResolution, 
+            bloomStrength, 
+            bloomRadius, 
+            bloomThreshold
+        )
+        
+        this.postProcess.composer.addPass(this.postProcess.bloomPass)
+
+        // 3. Optional Debug panel additions for Real-Time tuning
+        if (this.debug) {
+            const bloomFolder = this.debugFolder.addFolder('Unreal Bloom')
+            bloomFolder.add(this.postProcess.bloomPass, 'threshold').min(0.0).max(1.0).step(0.01).name('Threshold')
+            bloomFolder.add(this.postProcess.bloomPass, 'strength').min(0.0).max(3.0).step(0.05).name('Strength')
+            bloomFolder.add(this.postProcess.bloomPass, 'radius').min(0.0).max(2.0).step(0.01).name('Radius')
+        }
     }
 
     resize()

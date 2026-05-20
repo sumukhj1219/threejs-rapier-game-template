@@ -7,8 +7,8 @@ void main() {
     float centerGlow = 1.0 - length(centerUv);
     centerGlow = smoothstep(0.0, 0.8, centerGlow); 
 
-    vec3 coreWhite = vec3(5.0, 5.0, 4.0); 
-    vec3 midYellow = vec3(2.5, 1.8, 0.3);  
+    vec3 coreWhite = vec3(9.0, 5.0, 4.0); 
+    vec3 midYellow = vec3(10.0, 1.8, 0.3);  
     vec3 edgeOrange = vec3(1.5, 0.3, 0.0); 
     
     float dissolveThreshold = uTime * 0.9; 

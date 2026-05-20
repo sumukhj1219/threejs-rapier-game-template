@@ -16,6 +16,7 @@ export default class Explosion {
     }
 
     init() {
+        // Flash
         const sphereGeometry = new THREE.SphereGeometry(1, 128, 128)
         const textureLoader = new THREE.TextureLoader()
         const vertNoiseTex = textureLoader.load('/noise/worley.jpg')
@@ -24,16 +25,19 @@ export default class Explosion {
             vertexShader: explosionVertexShader,
             fragmentShader: explosionFragmentShader,
             side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending,
+            blending: 2,
             uniforms: {
                 uBaseTexture: { value: vertNoiseTex },
                 uTime: { value: 0 },
-                uGrowth: { value: 0.1 },
-                uSpikeLength: { value: 2 },
+                uGrowth: { value: 1 },
+                uSpikeLength: { value: 1.5 },
                 uRandomSeed: { value: 100 * Math.random() },
             }
         })
         this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
+
+
+
         this.scene.add(this.sphere)
     }
 
