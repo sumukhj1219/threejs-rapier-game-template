@@ -1,18 +1,31 @@
+uniform float uProgress;
 uniform sampler2D uTexture;
 uniform float uTime;
 
 varying vec2 vUv;
-varying vec3 vPosition;
+
+float hash(vec3 p) {
+    p = fract(p * 0.3183099 + .1);
+    p *= 17.0;
+    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
 
 void main() {
     vUv = uv;
-    vPosition = position;
+    
+    vec3 localPos = position;
+    vec3 normalDir = normalize(localPos);
 
-    vec4 noise = texture2D(uTexture, vUv);
+    float noise = texture2D(uTexture, vUv).r;
 
-    vec4 modelPosition = modelMatrix * vec4(position, 1.0) ;
-    vec4 viewPosition = viewMatrix * modelPosition * noise.r * 0.5 ;
-    vec4 projectedPosition = projectionMatrix * viewPosition - noise * 0.75 * sin(uTime);
+    float spikeFactor = pow(abs(sin(localPos.x * 12.0) * cos(localPos.y * 12.0) * sin(localPos.z * 12.0)), 3.0);
+    
+    float spikeLength = spikeFactor * 4.0 * (1.0 - uProgress);
+    
+    vec3 displacedPosition = localPos + normalDir * spikeLength * noise;
 
-    gl_Position = projectedPosition;
-}   
+    vec4 modelPosition = modelMatrix * vec4(displacedPosition, 1.0);
+    vec4 viewPosition = viewMatrix * modelPosition;
+    
+    gl_Position = projectionMatrix * viewPosition;
+}

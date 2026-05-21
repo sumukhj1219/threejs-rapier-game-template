@@ -32,7 +32,6 @@ export default class Drone {
     init() {
         const gltfLoader = new GLTFLoader()
         gltfLoader.load("/model/drone.glb", (gltf) => {
-            // 1. Create a container 
             this.droneGroup = new THREE.Group()
             this.droneModel = gltf.scene
             
@@ -67,7 +66,7 @@ export default class Drone {
         this.pathMesh = wall.path
         this.setupPath()
     }
-                        
+
     setupPath() {
         if (!this.pathMesh || !this.pathMesh.geometry) return
 
@@ -131,15 +130,12 @@ export default class Drone {
         const blasterWorldPos = new THREE.Vector3()
         this.blaster.getWorldPosition(blasterWorldPos)
         
-        // Direction from blaster to player
         const directionToPlayer = new THREE.Vector3()
         directionToPlayer.subVectors(playerPos, blasterWorldPos)
         directionToPlayer.normalize()
         
-        // Calculate yaw angle to look at player
         const yawAngle = Math.atan2(directionToPlayer.x, directionToPlayer.z)
         
-        // Apply yaw rotation to the blaster
         this.blaster.rotation.y = yawAngle
     }
 
@@ -152,18 +148,15 @@ export default class Drone {
         const player = this.experience.world?.player
         if (!player || !player.meshInstance) return
         
-        this.shootCooldown -= 16 // Decrease cooldown each frame (assuming 60fps)
+        this.shootCooldown -= 16
         
-        // Check distance to player
         const playerPos = player.meshInstance.position
         const distance = this.droneGroup.position.distanceTo(playerPos)
         
         if (distance > this.shootDistance || this.shootCooldown > 0) return
         
-        // Reset cooldown
         this.shootCooldown = this.shootCooldownMax
         
-        // Create bullet similar to player weapon
         const bulletGroup = new THREE.Group()
         
         const coreGeom = new THREE.CylinderGeometry(0.01, 0.01, 0.8)
@@ -189,7 +182,6 @@ export default class Drone {
         
         this.scene.add(bulletGroup)
         
-        // Direction toward player
         const directionToPlayer = new THREE.Vector3()
         directionToPlayer.subVectors(playerPos, blasterWorldPos)
         directionToPlayer.normalize()
