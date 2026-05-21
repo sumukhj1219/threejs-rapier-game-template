@@ -22,7 +22,7 @@ export default class Blast {
 
     init() {
         const textureLoader = new THREE.TextureLoader()
-        const blastTexture = textureLoader.load('/noise/vornoi.jpg')
+        const blastTexture = textureLoader.load('/noise/vornoi.png')
 
         const blastGeometry = new THREE.SphereGeometry(0.5, 16, 16)
         const sparkCount = 15; 

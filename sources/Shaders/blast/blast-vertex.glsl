@@ -18,7 +18,7 @@ void main() {
 
     float noise = texture2D(uTexture, vUv).r;
 
-    float spikeFactor = pow(abs(sin(localPos.x * 12.0) * cos(localPos.y * 12.0) * sin(localPos.z * 12.0)), 3.0);
+    float spikeFactor = pow(abs(sin(localPos.x * noise * 12.0) * cos(localPos.y * noise * 12.0) * sin(localPos.z * noise * 12.0)), 3.0);
     
     float spikeLength = spikeFactor * 4.0 * (1.0 - uProgress);
     
