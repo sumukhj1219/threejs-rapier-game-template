@@ -36,9 +36,20 @@ export default class Explosion {
         })
         this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
 
-
+        // Particles
+        const particleCount = 100
+        const particleGeometry = new THREE.SphereGeometry(3, 8, 8)
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.1,
+            transparent: true,
+            blending: 2,
+            depthWrite: false,
+        })
+        this.particles = new THREE.Points(particleGeometry, particleMaterial)
 
         this.scene.add(this.sphere)
+        this.scene.add(this.particles)
     }
 
     update() {
@@ -62,5 +73,8 @@ export default class Explosion {
         this.scene.remove(this.sphere)
         this.sphere.geometry.dispose()
         this.sphere.material.dispose()
+        this.scene.remove(this.particles)
+        this.particles.geometry.dispose()
+        this.particles.material.dispose()
     }
 }
