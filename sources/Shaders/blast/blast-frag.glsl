@@ -1,38 +1,32 @@
-uniform vec3 uColorBright; // Set to Yellow (#ffe600)
-uniform vec3 uColorMid;    // Set to Orange/Red (#ff3c00)
-uniform vec3 uColorDark;   // Set to Deep Crimson (#8a0000)
+uniform vec3 uColorBright;
+uniform vec3 uColorMid;
+uniform vec3 uColorDark;
 
-uniform float uProgress;  
+uniform float uProgress;
 uniform sampler2D uTexture;
 uniform float uTime;
 
 varying vec2 vUv;
 
 void main() {
-    vec2 movingUv = vUv + vec2(uTime * 0.15, uTime * 0.1);
+    vec2 movingUv = vUv * 2.3 + vec2(uTime * 0.18, -uTime * 0.12);
     float noise = texture2D(uTexture, movingUv).r;
-    
-    // Control the crisp erosion over the timeline
-    float threshold = (1.0 - uProgress) * 1.3;
-    float value = noise * threshold;
+    float noise2 = texture2D(uTexture, vUv * 3.1 + vec2(uTime * 0.1)).r;
+    float combined = mix(noise, noise2, 0.45);
 
-    // Hard step bands for vector graphic cel-shading look
-    float edgeMask = step(0.15, value);
-    float midMask  = step(0.45, value);
-    float coreMask  = step(0.75, value);
-    
-    // Cascade color mixing
-    vec3 finalColor = uColorDark; 
-    finalColor = mix(finalColor, uColorMid, midMask);
-    finalColor = mix(finalColor, uColorBright, coreMask);
+    float threshold = (1.0 - uProgress) * 1.15;
+    float value = combined * threshold;
 
-    // Punch up the yellow core brightness so it feels hot and instantaneous
-    if (coreMask > 0.5) {
-        finalColor *= 1.8;
-    }
+    float darkMid = smoothstep(0.18, 0.45, value);
+    float midBright = smoothstep(0.45, 0.75, value);
+    vec3 baseColor = mix(uColorDark, uColorMid, darkMid);
+    vec3 finalColor = mix(baseColor, uColorBright, midBright);
 
-    // High-contrast alpha cutout
-    float alpha = edgeMask * (1.0 - uProgress);
+    float brightness = 1.0 + midBright * 1.0 * (1.0 - uProgress);
+    finalColor *= brightness;
+
+    float glow = smoothstep(0.08, 0.22, value) * (1.0 - uProgress);
+    float alpha = smoothstep(0.08, 0.38, value) * glow;
 
     gl_FragColor = vec4(finalColor, alpha);
 }

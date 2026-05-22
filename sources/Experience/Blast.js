@@ -10,24 +10,25 @@ export default class Blast {
     constructor(position) {
         this.experience = new Experience()
         this.scene = this.experience.scene
-        this.spheres = []
+        this.spikes = []
         this.group = new THREE.Group()
         this.scene.add(this.group)
         this.blastPosition = position
-        this.textMesh = null
-        this.textTargetRotationZ = 0;
 
         this.init()
     }
 
     init() {
         const textureLoader = new THREE.TextureLoader()
-        const blastTexture = textureLoader.load('/noise/vornoi.png')
+        const blastTexture = textureLoader.load('/noise/fractal.jpg')
+        const impactTexture = textureLoader.load('/noise/perlin.png')
 
-        const blastGeometry = new THREE.SphereGeometry(0.5, 16, 16)
-        const sparkCount = 15; 
+        const spikeGeometry = new THREE.CylinderGeometry(0.03, 0.05, 1.2, 10, 4, true)
+        spikeGeometry.rotateX(Math.PI / 2)
+        spikeGeometry.translate(0, 0, 0.6)
+        const spikeCount = 24;
 
-        for (let i = 0; i < sparkCount; i++) {
+        for (let i = 0; i < spikeCount; i++) {
             const blastMaterial = new THREE.ShaderMaterial({
                 vertexShader: blastVertexShader,
                 fragmentShader: blastFragmentShader,
@@ -35,40 +36,42 @@ export default class Blast {
                     uProgress: { value: 0 }, 
                     uTexture: { value: blastTexture },
                     uTime: { value: Math.random() * 100 },
-                    uColorBright: { value: new THREE.Color("#f4a508") },
-                    uColorMid: { value: new THREE.Color("#ea2886") },   
-                    uColorDark: { value: new THREE.Color("#1bb8d7") },   
+                    uColorBright: { value: new THREE.Color("#08d3f7") },
+                    uColorMid: { value: new THREE.Color("#f2e608") },   
+                    uColorDark: { value: new THREE.Color("#ec0ba5") },   
                 },
                 transparent: true,
                 depthWrite: false,
                 side: THREE.DoubleSide,
             })
             
-            const mesh = new THREE.Mesh(blastGeometry, blastMaterial)
-            const distance = Math.random() * 1.5 + 0.5; 
-            const phi = Math.random() * Math.PI * 2;
-            const theta = Math.acos(2 * Math.random() - 1);
+            const mesh = new THREE.Mesh(spikeGeometry, blastMaterial)
+            const phi = (i / spikeCount) * Math.PI * 2
+            const tilt = (Math.random() - 0.5) * 0.35
+            const lengthFactor = 0.8 + Math.random() * 0.55
 
-            mesh.userData = {
-                targetX: distance * Math.sin(theta) * Math.cos(phi),
-                targetY: distance * Math.sin(theta) * Math.sin(phi),
-                targetZ: distance * Math.cos(theta)
-            }
-
-            mesh.scale.set(0.1, 0.1, 0.1)
-            mesh.lookAt(mesh.userData.targetX, mesh.userData.targetY, mesh.userData.targetZ);
+            mesh.rotation.y = phi
+            mesh.rotation.x = tilt
+            mesh.rotation.z = (Math.random() - 0.5) * 0.25
+            mesh.position.set(0, 0, 0)
+            mesh.scale.set(1, 1, lengthFactor)
+            mesh.userData.lengthFactor = lengthFactor
             
             this.group.add(mesh)
-            this.spheres.push(mesh)
+            this.spikes.push(mesh)
         }
 
-        const impactGeometry = new THREE.RingGeometry(0.1, 5, 32)
+        const impactGeometry = new THREE.RingGeometry(0.15, 5, 64)
         const impactMaterial = new THREE.ShaderMaterial({
             vertexShader: waveVertexShader,
             fragmentShader: waveFragmentShader,
             uniforms: {
                 uProgress: { value: 0 },
-                uTexture: { value: blastTexture },
+                uTexture: { value: impactTexture },
+                uTime: { value: 0 },
+                uColorBright: { value: new THREE.Color("#08d3f7") },
+                uColorMid: { value: new THREE.Color("#f2e608") },
+                uColorDark: { value: new THREE.Color("#ec0ba5") },
             },
             blending: THREE.AdditiveBlending,
             transparent: true,
@@ -79,24 +82,7 @@ export default class Blast {
         this.group.add(this.impactMesh)
 
         this.group.position.copy(this.blastPosition)
-
-        textureLoader.load('/assets/collage.jpg', (pngTexture) => {
-            const textGeometry = new THREE.PlaneGeometry(2.0, 1.0);
-            const textMaterial = new THREE.MeshBasicMaterial({
-                map: pngTexture,
-                transparent: true,
-                side: THREE.DoubleSide,
-                depthWrite: false
-            });
-
-            this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
-            this.textMesh.position.y = 0.6; 
-            this.textMesh.scale.set(0, 0, 0); 
-            
-            this.group.add(this.textMesh);
-
-            this.explodeEffect();
-        });
+        this.explodeEffect();
     }
 
     explodeEffect() {
@@ -122,69 +108,38 @@ export default class Blast {
 
         const duration = 0.5;
 
-        this.spheres.forEach((sphere) => {
-            tl.to(sphere.position, {
-                x: sphere.userData.targetX, y: sphere.userData.targetY, z: sphere.userData.targetZ,
-                duration: duration, ease: "expo.out"
+        this.spikes.forEach((spike) => {
+            tl.to(spike.scale, {
+                x: 1.0, y: 1.0, z: spike.userData.lengthFactor * 2.5, duration: duration * 0.35, ease: "power4.out"
             }, 0);
 
-            tl.to(sphere.scale, {
-                x: 3.0, y: 3.0, z: 6.0, duration: duration * 0.3, ease: "power4.out"
-            }, 0);
-
-            tl.to(sphere.scale, {
-                x: 0, y: 0, z: 0, duration: duration * 0.7, ease: "power2.in"
+            tl.to(spike.scale, {
+                x: 0, y: 0, z: 0, duration: duration * 0.55, ease: "power2.in"
             }, duration * 0.3);
 
-            tl.to(sphere.material.uniforms.uProgress, {
+            tl.to(spike.material.uniforms.uProgress, {
                 value: 1.0, duration: duration, ease: "linear"
             }, 0);
         });
 
         // Fast expanding ring wave
         tl.to(this.impactMesh.scale, {
-            x: 2.5, y: 2.5, duration: duration * 0.8, ease: "expo.out"
+            x: 3.5, y: 3.5, duration: duration * 0.8, ease: "expo.out"
         }, 0);
 
         tl.to(this.impactMesh.material.uniforms.uProgress, {
             value: 1.0, duration: duration * 0.8, ease: "power2.out"
         }, 0);
 
-        // --- SNAPPY PNG POP ---
-        if (this.textMesh) {
-            tl.to(this.textMesh.scale, {
-                x: 1.3,
-                y: 1.3,
-                z: 1.3,
-                duration: duration * 0.25,
-                ease: "back.out(2.5)"
-            }, 0);
-
-            this.textTargetRotationZ = (Math.random() - 0.5) * 0.3;
-            tl.to(this, {
-                textTargetRotationZ: this.textTargetRotationZ,
-                duration: duration * 0.25,
-                ease: "power2.out"
-            }, 0);
-
-            tl.to(this.textMesh.scale, {
-                x: 0,
-                y: 0,
-                z: 0,
-                duration: duration * 0.4,
-                ease: "power3.in"
-            }, duration * 0.6);
-        }
     }
 
     update() {
-        this.spheres.forEach(sphere => {
-            sphere.material.uniforms.uTime.value += 0.02;
+        this.spikes.forEach(spike => {
+            spike.material.uniforms.uTime.value += 0.02;
         });
 
-        if (this.textMesh && this.experience.camera) {
-            this.textMesh.quaternion.copy(this.experience.camera.instance.quaternion);
-            this.textMesh.rotateZ(this.textTargetRotationZ);
+        if (this.impactMesh) {
+            this.impactMesh.material.uniforms.uTime.value += 0.035;
         }
     }
 }
