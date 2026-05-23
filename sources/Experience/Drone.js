@@ -17,8 +17,6 @@ export default class Drone {
         this.curve = null
         
         this.animationTimer = 0 
-
-        this.bullets = this.experience.world?.weapon?.bullets || []
         
         this.droneBullets = []
         this.shootCooldown = 0
@@ -236,23 +234,38 @@ export default class Drone {
     checkCollison() {
         if (this.hasBeenHit || !this.droneGroup) return
 
+        const bullets = this.experience.world?.weapon?.bullets
+        if (!bullets || !bullets.length) return
+
         const bulletPos = new THREE.Vector3()
-        this.bullets.forEach((bullet) => {
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            const bullet = bullets[i]
             const bMesh = bullet?.mesh ?? bullet
-            if (!bMesh) return
+            if (!bMesh) continue
 
             bMesh.getWorldPosition(bulletPos)
             const dist = bulletPos.distanceTo(this.droneGroup.position)
             
             if (dist < this.collisonDistance) {
                 this.die(bulletPos)
+
+                if (bMesh.parent) {
+                    bMesh.parent.remove(bMesh)
+                }
+
+                bullets.splice(i, 1)
+                return
             }
-        })
+        }
     }
 
     die(impactPoint) {
         this.hasBeenHit = true
-        if (typeof Blast === 'function') this.blast = new Blast(impactPoint)
+        const impactPosition = impactPoint && impactPoint.isVector3 ? impactPoint.clone() : impactPoint
+        if (typeof Blast === 'function') {
+            console.log('Drone dying - spawning Blast at', impactPosition)
+            this.blast = new Blast(impactPosition)
+        }
         this.scene.remove(this.droneGroup)
     }
 
