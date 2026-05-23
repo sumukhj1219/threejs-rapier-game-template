@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import Experience from './Experience.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 
 export default class Renderer
 {
@@ -19,14 +21,18 @@ export default class Renderer
         {
             this.debugFolder = this.debug.addFolder('renderer')
         }
+        
+        this.usePostprocess = true
 
         this.setInstance()
+        this.setPostProcess()
     }
 
     setInstance()
     {
         this.clearColor = '#010101'
 
+        // Renderer
         this.instance = new THREE.WebGLRenderer({
             alpha: false,
             antialias: true
@@ -37,6 +43,7 @@ export default class Renderer
         this.instance.domElement.style.width = '100%'
         this.instance.domElement.style.height = '100%'
         
+
         this.instance.setClearColor(this.clearColor, 1)
         this.instance.setSize(this.config.width, this.config.height)
         this.instance.setPixelRatio(this.config.pixelRatio)
@@ -100,10 +107,46 @@ export default class Renderer
         }
     }
 
+    setPostProcess()
+    {
+        this.postProcess = {}
+
+        /**
+         * Render pass
+         */
+        this.postProcess.renderPass = new RenderPass(this.scene, this.camera.instance)
+
+        /**
+         * Effect composerz
+         */
+        this.renderTarget = new THREE.WebGLRenderTarget(
+            this.config.width,
+            this.config.height,
+            {
+                generateMipmaps: false,
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                format: THREE.RGBFormat,
+                encoding: THREE.sRGBEncoding,
+                samples: 2
+            }
+        )
+        this.postProcess.composer = new EffectComposer(this.instance, this.renderTarget)
+        this.postProcess.composer.setSize(this.config.width, this.config.height)
+        this.postProcess.composer.setPixelRatio(this.config.pixelRatio)
+
+        this.postProcess.composer.addPass(this.postProcess.renderPass)
+    }
+
     resize()
     {
+        // Instance
         this.instance.setSize(this.config.width, this.config.height)
         this.instance.setPixelRatio(this.config.pixelRatio)
+
+        // Post process
+        this.postProcess.composer.setSize(this.config.width, this.config.height)
+        this.postProcess.composer.setPixelRatio(this.config.pixelRatio)
     }
 
     update()
@@ -113,8 +156,14 @@ export default class Renderer
             this.stats.beforeRender()
         }
 
-        // Standard direct renderer invocation
-        this.instance.render(this.scene, this.camera.instance)
+        if(this.usePostprocess)
+        {
+            this.postProcess.composer.render()
+        }
+        else
+        {
+            this.instance.render(this.scene, this.camera.instance)
+        }
 
         if(this.stats)
         {
@@ -126,5 +175,8 @@ export default class Renderer
     {
         this.instance.renderLists.dispose()
         this.instance.dispose()
+        this.renderTarget.dispose()
+        this.postProcess.composer.renderTarget1.dispose()
+        this.postProcess.composer.renderTarget2.dispose()
     }
 }

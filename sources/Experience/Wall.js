@@ -8,8 +8,7 @@ export default class Wall {
         this.experience = new Experience()
         this.scene = this.experience.scene
         this.physicsWorld = this.experience.world.physics.world
-        this.walls=[]
-        this.path=null
+
         this.init()
     }
 
@@ -47,7 +46,6 @@ export default class Wall {
 
         const gltfLoader = new GLTFLoader()
         gltfLoader.load("/model/wall.glb", (gltf) => {
-            console.log('[Wall] Model loaded')
             this.meshInstance = gltf.scene
             this.meshInstance.scale.set(5.25, 10, 5.25)
             this.meshInstance.updateMatrixWorld(true)
@@ -66,15 +64,11 @@ export default class Wall {
                     node.castShadow = true
                     node.receiveShadow = true
                     this.setPhysics(node)
-                    this.walls.push(node)
                 }
-                if (node.name && node.name.includes("Path")) {
-                    console.log('[Wall] Found path node:', node.name, 'type:', node.type)
-                    this.path = node
+                else if (node.isMesh && (node.name.includes("Plane") || node.name.includes("Tv"))) {
                     node.visible = false
                 }
             })
-            console.log('[Wall] Path set to:', this.path?.name, 'geometry:', !!this.path?.geometry)
             this.scene.add(this.meshInstance)
         })
     }

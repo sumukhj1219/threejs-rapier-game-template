@@ -8,7 +8,6 @@ import View from './View.js'
 import Weapon from './Weapon.js'
 import Wall from './Wall.js'
 import Blast from './Blast.js'
-import Drone from './Drone.js'
 
 export default class World {
     constructor(_options) {
@@ -31,20 +30,12 @@ export default class World {
         this.view = new View()
         this.weapon = new Weapon()
         this.wall = new Wall()
-        this.drone = new Drone()
 
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
                 this.setBaseGrid()
             }
         })
-    }
-
-    setBaseGrid() {
-        const grid = new THREE.GridHelper(100, 100, new THREE.Color("#444"), new THREE.Color("#222"))   
-        grid.material.opacity = 0.5
-        grid.material.transparent = true
-        this.scene.add(grid)
     }
 
     resize() {
@@ -54,8 +45,7 @@ export default class World {
         if (this.physics) this.physics.update()
         if (this.view) this.view.update()
         if (this.player) this.player.update()
-        if (this.energy) this.energy.update()
-        if (this.drone) this.drone.update()
+        if (this.blast) this.blast.update()
     }
 
     destroy() {

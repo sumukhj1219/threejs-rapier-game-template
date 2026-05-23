@@ -1,32 +1,31 @@
-uniform vec3 uColorBright;
-uniform vec3 uColorMid;
-uniform vec3 uColorDark;
-
-uniform float uProgress;
+uniform vec3 uColorBright; 
+uniform vec3 uColorDark;   
+uniform float uStrength;  
 uniform sampler2D uTexture;
 uniform float uTime;
 
 varying vec2 vUv;
 
 void main() {
-    vec2 movingUv = vUv * 2.3 + vec2(uTime * 0.18, -uTime * 0.12);
-    float noise = texture2D(uTexture, movingUv).r;
-    float noise2 = texture2D(uTexture, vUv * 3.1 + vec2(uTime * 0.1)).r;
-    float combined = mix(noise, noise2, 0.45);
+    float noise = texture2D(uTexture, vUv).r;
+    
+    float life = noise * uStrength;
 
-    float threshold = (1.0 - uProgress) * 1.15;
-    float value = combined * threshold;
+    vec3 neonRed = vec3(1.0, 0.0, 0.2);
+    vec3 neonYellow = vec3(1.0, 0.9, 0.1);
+    vec3 neonWhite = vec3(1.0, 1.0, 1.0);
+    
+    float outerGlowMask = smoothstep(0.0, 0.5, life);
+    float innerGlowMask = smoothstep(0.4, 0.7, life);
+    float coreMask = smoothstep(0.7, 1.0, life);
 
-    float darkMid = smoothstep(0.18, 0.45, value);
-    float midBright = smoothstep(0.45, 0.75, value);
-    vec3 baseColor = mix(uColorDark, uColorMid, darkMid);
-    vec3 finalColor = mix(baseColor, uColorBright, midBright);
+    vec3 finalColor = mix(vec3(0.0), neonRed, outerGlowMask);
+    finalColor = mix(finalColor, neonYellow, innerGlowMask);
+    finalColor = mix(finalColor, neonWhite, coreMask);
 
-    float brightness = 1.0 + midBright * 1.0 * (1.0 - uProgress);
-    finalColor *= brightness;
+    finalColor *= 1.2; 
 
-    float glow = smoothstep(0.08, 0.22, value) * (1.0 - uProgress);
-    float alpha = smoothstep(0.08, 0.38, value) * glow;
+    float alpha = smoothstep(0.1, 0.4, life) * uStrength;
 
     gl_FragColor = vec4(finalColor, alpha);
 }
