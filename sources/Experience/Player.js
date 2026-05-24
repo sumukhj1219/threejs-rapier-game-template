@@ -231,4 +231,34 @@ export default class Player {
         if (this.weapon)
             this.weapon.update()
     }
+
+    die() {
+        this.isDead = true
+        
+        this.scene.remove(this.meshInstance)
+        
+        if (this.rigidBody && this.physicsWorld) {
+            this.physicsWorld.removeRigidBody(this.rigidBody)
+            this.rigidBody = null
+        }
+        
+        console.log("Player died!")
+    }
+
+    update() {
+        // Don't update if player is dead
+        if (this.isDead) return
+        
+        if (this.rigidBody) {
+            const position = this.rigidBody.translation();
+            const rotation = this.rigidBody.rotation();
+
+            this.meshInstance.position.copy(position);
+            this.meshInstance.quaternion.copy(rotation);
+        }
+
+        this.movements()
+        if (this.weapon)
+            this.weapon.update()
+    }
 }

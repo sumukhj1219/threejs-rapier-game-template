@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 import Experience from "./Experience.js"
-import Blast from './Blast.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import gsap from 'gsap';
+import Explosion from './Explosion.js';
 
 export default class Drone {
     constructor(_options) {
@@ -17,6 +17,8 @@ export default class Drone {
         this.curve = null
         
         this.animationTimer = 0 
+
+        this.bullets = this.experience.world?.weapon?.bullets || []
         
         this.droneBullets = []
         this.shootCooldown = 0
@@ -234,39 +236,34 @@ export default class Drone {
     checkCollison() {
         if (this.hasBeenHit || !this.droneGroup) return
 
-        const bullets = this.experience.world?.weapon?.bullets
-        if (!bullets || !bullets.length) return
-
         const bulletPos = new THREE.Vector3()
-        for (let i = bullets.length - 1; i >= 0; i--) {
-            const bullet = bullets[i]
+        this.bullets.forEach((bullet) => {
             const bMesh = bullet?.mesh ?? bullet
-            if (!bMesh) continue
+            if (!bMesh) return
 
             bMesh.getWorldPosition(bulletPos)
             const dist = bulletPos.distanceTo(this.droneGroup.position)
             
             if (dist < this.collisonDistance) {
                 this.die(bulletPos)
-
-                if (bMesh.parent) {
-                    bMesh.parent.remove(bMesh)
-                }
-
-                bullets.splice(i, 1)
-                return
             }
-        }
+        })
     }
 
     die(impactPoint) {
         this.hasBeenHit = true
-        const impactPosition = impactPoint && impactPoint.isVector3 ? impactPoint.clone() : impactPoint
-        if (typeof Blast === 'function') {
-            console.log('Drone dying - spawning Blast at', impactPosition)
-            this.blast = new Blast(impactPosition)
+        console.log("impact point", impactPoint)
+        
+        // Target the newly imported Explosion class directly
+        if (typeof Explosion === 'function') {
+            this.blast = new Explosion(impactPoint)
+        } else {
+            console.error("Explosion class is not loaded or defined.")
         }
-        this.scene.remove(this.droneGroup)
+        
+        if (this.droneGroup) {
+            this.scene.remove(this.droneGroup)
+        }
     }
 
     update() {

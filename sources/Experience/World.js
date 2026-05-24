@@ -7,7 +7,7 @@ import Ground from './Ground.js'
 import View from './View.js'
 import Weapon from './Weapon.js'
 import Wall from './Wall.js'
-import Blast from './Blast.js'
+import Drone from "./Drone.js"
 
 export default class World {
     constructor(_options) {
@@ -30,6 +30,7 @@ export default class World {
         this.view = new View()
         this.weapon = new Weapon()
         this.wall = new Wall()
+        this.drone = new Drone()
 
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
@@ -45,7 +46,7 @@ export default class World {
         if (this.physics) this.physics.update()
         if (this.view) this.view.update()
         if (this.player) this.player.update()
-        if (this.blast) this.blast.update()
+        if (this.drone) this.drone.update()
     }
 
     destroy() {
