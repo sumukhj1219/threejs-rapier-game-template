@@ -25,14 +25,15 @@ export default class World {
         await this.physics.init()
 
         this.environment = new Environment()
-
         this.ground = new Ground()
         this.player = new Player()
         this.view = new View()
         this.weapon = new Weapon()
         this.wall = new Wall()
         this.drone = new Drone()
-
+        this.portal = new Portal()
+        
+        
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
                 this.setBaseGrid()
@@ -48,6 +49,7 @@ export default class World {
         if (this.view) this.view.update()
         if (this.player) this.player.update()
         if (this.drone) this.drone.update()
+        if (this.portal) this.portal.update()
     }
 
     destroy() {

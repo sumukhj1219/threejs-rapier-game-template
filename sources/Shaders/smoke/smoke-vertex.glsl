@@ -8,8 +8,6 @@ void main() {
     vUv = uv;
     vec3 transformed = position;
 
-    // Simulate heat convection rising upward based on progress lifetime
-    // As the smoke expands, it pushes upward along the local Y axis
     float riseEffect = uProgress * 1.5;
     transformed.y += riseEffect;
 
