@@ -22,8 +22,9 @@ export default class Portal {
             fragmentShader: portalFragmentShader,
             uniforms:{
                 uTime:{value: 2.0},
-                uTexture:{value: portalTexture}
-            }
+                uTexture:{value: portalTexture},
+            },
+            side: THREE.DoubleSide
         })
         this.portalMesh = new THREE.Mesh(planeGeometry, planeMaterial)
         this.scene.add(this.portalMesh)

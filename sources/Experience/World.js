@@ -25,7 +25,6 @@ export default class World {
         await this.physics.init()
 
         // this.environment = new Environment()
-
         // this.ground = new Ground()
         // this.player = new Player()
         // this.view = new View()
@@ -33,7 +32,8 @@ export default class World {
         // this.wall = new Wall()
         // this.drone = new Drone()
         this.portal = new Portal()
-
+        
+        
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
                 this.setBaseGrid()
