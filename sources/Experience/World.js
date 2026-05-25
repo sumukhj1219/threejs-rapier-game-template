@@ -8,6 +8,7 @@ import View from './View.js'
 import Weapon from './Weapon.js'
 import Wall from './Wall.js'
 import Drone from "./Drone.js"
+import Explosion from './Explosion.js'
 
 export default class World {
     constructor(_options) {
