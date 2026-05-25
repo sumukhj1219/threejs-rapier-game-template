@@ -17,7 +17,7 @@ export default class Weapon {
         this.experience = new Experience();
         this.scene = this.experience.scene;
         this.camera = this.experience.camera.instance;
-        
+
         const oldContainer = this.camera.getObjectByName("weaponContainer");
         if (oldContainer) this.camera.remove(oldContainer);
 
@@ -226,6 +226,46 @@ export default class Weapon {
         });
 
         this.flashMuzzle();
+    }
+
+    applyBlastImpact() {
+        if (!this.container) return;
+
+        // Interrupt any ongoing animations and snap back/up
+        gsap.killTweensOf(this.container.position);
+        gsap.killTweensOf(this.container.rotation);
+
+        // Violent jerk: Move backward (Z increases/goes positive) and tilt upward (X rotates negative)
+        gsap.to(this.container.position, {
+            z: 0.4, // Jar backward
+            y: -0.1, // Dip down slightly from force
+            duration: 0.05,
+            ease: "power4.out",
+            onComplete: () => {
+                // Smoothly recover back to baseline layout
+                gsap.to(this.container.position, {
+                    z: 0,
+                    y: 0,
+                    duration: 0.6,
+                    ease: "back.out(1.2)"
+                });
+            }
+        });
+
+        gsap.to(this.container.rotation, {
+            x: -0.3,
+            z: 0.1, 
+            duration: 0.05,
+            ease: "power4.out",
+            onComplete: () => {
+                gsap.to(this.container.rotation, {
+                    x: 0,
+                    z: 0,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            }
+        });
     }
 
     update() {

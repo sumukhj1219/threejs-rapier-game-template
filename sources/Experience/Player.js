@@ -2,6 +2,7 @@ import Experience from "./Experience";
 import * as THREE from 'three'
 import RAPIER from "@dimforge/rapier3d-compat";
 import Weapon from "./Weapon";
+import gsap from "gsap";
 
 export default class Player {
     constructor() {
@@ -218,35 +219,55 @@ export default class Player {
         }, 1500);
     }
 
-    update() {
-        if (this.rigidBody) {
-            const position = this.rigidBody.translation();
-            const rotation = this.rigidBody.rotation();
+    takeDamage() {
+        if (this.isDead) return
 
-            this.meshInstance.position.copy(position);
-            this.meshInstance.quaternion.copy(rotation);
+        const flash = document.createElement('div');
+        flash.style.position = 'fixed';
+        flash.style.top = '0';
+        flash.style.left = '0';
+        flash.style.width = '100vw';
+        flash.style.height = '100vh';
+        flash.style.backgroundColor = 'rgba(255, 0, 0, 0.4)';
+        flash.style.pointerEvents = 'none';
+        flash.style.zIndex = '9999';
+        document.body.appendChild(flash);
+
+        gsap.to(flash, {
+            opacity: 0,
+            duration: 0.4,
+            onComplete: () => flash.remove()
+        });
+
+        const cameraInstance = this.experience.camera?.instance
+        if (cameraInstance) {
+           
+            const originalX = cameraInstance.position.x
+            const originalY = cameraInstance.position.y
+
+            const shakeTl = gsap.timeline();
+
+            shakeTl.to(cameraInstance.position, { x: originalX + 0.12, y: originalY + 0.08, duration: 0.04 })
+                .to(cameraInstance.position, { x: originalX - 0.10, y: originalY - 0.11, duration: 0.04 })
+                .to(cameraInstance.position, { x: originalX + 0.07, y: originalY + 0.07, duration: 0.04 })
+                .to(cameraInstance.position, { x: originalX - 0.06, y: originalY - 0.04, duration: 0.04 })
+                .to(cameraInstance.position, { x: originalX, y: originalY, duration: 0.04 }); 
         }
-
-        this.movements()
-        if (this.weapon)
-            this.weapon.update()
     }
 
     die() {
         this.isDead = true
-        
+
         this.scene.remove(this.meshInstance)
-        
+
         if (this.rigidBody && this.physicsWorld) {
             this.physicsWorld.removeRigidBody(this.rigidBody)
             this.rigidBody = null
         }
-        
         console.log("Player died!")
     }
 
     update() {
-        // Don't update if player is dead
         if (this.isDead) return
         
         if (this.rigidBody) {

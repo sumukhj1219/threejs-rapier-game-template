@@ -4,6 +4,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import gsap from 'gsap';
 import Explosion from './Explosion.js';
 import RAPIER from '@dimforge/rapier3d-compat';
+import MuzzleFlash from './MuzzleFlash.js';
+import Missile from './Missile.js';
 
 export default class Drone {
     constructor(_options) {
@@ -28,6 +30,9 @@ export default class Drone {
         this.shootCooldownMax = 1.5
         this.shootDistance = 50
         this.blasterPosition = new THREE.Vector3()
+
+        this.shotsFired = 0
+        this.maxShots = 3
 
         // Debris collections
         this.debrisSourcePieces = []
@@ -54,6 +59,8 @@ export default class Drone {
 
                     if (node.name.toLowerCase().includes("body_cell")) {
                         node.visible = false
+                        node.castShadow = true
+                        node.receiveShadow = true
                         this.debrisSourcePieces.push(node)
                     }
                 }
@@ -159,80 +166,59 @@ export default class Drone {
         const player = this.experience.world?.player
         if (!player || !player.meshInstance) return
 
+        if (this.shotsFired >= this.maxShots) return
+
         this.shootCooldown -= 16
 
-        const playerPos = player.meshInstance.position
+        const playerPos = player.meshInstance.position.clone()
         const distance = this.droneGroup.position.distanceTo(playerPos)
 
         if (distance > this.shootDistance || this.shootCooldown > 0) return
 
         this.shootCooldown = this.shootCooldownMax
-
-        const bulletGroup = new THREE.Group()
-
-        const coreGeom = new THREE.CylinderGeometry(0.01, 0.01, 0.8)
-        coreGeom.rotateX(Math.PI / 2)
-        const coreMat = new THREE.MeshBasicMaterial({ color: "#ffff00" })
-        const core = new THREE.Mesh(coreGeom, coreMat)
-
-        const glowGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.85)
-        glowGeom.rotateX(Math.PI / 2)
-        const glowMat = new THREE.MeshBasicMaterial({
-            color: "#ffff00",
-            transparent: true,
-            opacity: 0.5,
-            blending: THREE.AdditiveBlending
-        })
-        const glow = new THREE.Mesh(glowGeom, glowMat)
-
-        bulletGroup.add(core, glow)
+        this.shotsFired++
 
         const blasterWorldPos = new THREE.Vector3()
         this.blaster.getWorldPosition(blasterWorldPos)
-        bulletGroup.position.copy(blasterWorldPos)
 
-        this.scene.add(bulletGroup)
+        new MuzzleFlash(this.scene, blasterWorldPos)
 
-        const directionToPlayer = new THREE.Vector3()
-        directionToPlayer.subVectors(playerPos, blasterWorldPos)
-        directionToPlayer.normalize()
+        const trackingMissile = new Missile(
+            this.scene,
+            blasterWorldPos,
+            player,
+            (impactPoint) => {
+                if (typeof Explosion === 'function') {
+                    new Explosion(impactPoint)
+                }
 
-        this.droneBullets.push({
-            mesh: bulletGroup,
-            velocity: directionToPlayer.multiplyScalar(1.2),
-            direction: directionToPlayer.clone()
-        })
+                if (player.takeDamage) {
+                    player.takeDamage();
+                }
+
+                const weapon = this.experience.world?.weapon;
+                if (weapon && weapon.applyBlastImpact) {
+                    weapon.applyBlastImpact();
+                }
+
+                gsap.delayedCall(0.25, () => {
+                    if (player.die) {
+                        player.die();
+                    }
+                });
+            }
+        )
+
+        this.droneBullets.push(trackingMissile)
     }
 
     updateDroneBullets() {
         for (let i = this.droneBullets.length - 1; i >= 0; i--) {
-            const b = this.droneBullets[i]
-            b.mesh.position.add(b.velocity)
+            const missile = this.droneBullets[i]
+            missile.update()
 
-            if (b.mesh.position.distanceTo(this.droneGroup.position) > 100) {
-                this.scene.remove(b.mesh)
+            if (!missile.alive) {
                 this.droneBullets.splice(i, 1)
-            }
-        }
-    }
-
-    checkCollisionWithPlayer() {
-        const player = this.experience.world?.player
-        if (!player || !player.meshInstance) return
-
-        const playerPos = player.meshInstance.position
-
-        for (let i = this.droneBullets.length - 1; i >= 0; i--) {
-            const b = this.droneBullets[i]
-            const bulletPos = b.mesh.position
-            const dist = bulletPos.distanceTo(playerPos)
-
-            if (dist < 1.5) {
-                this.scene.remove(b.mesh)
-                this.droneBullets.splice(i, 1)
-                if (player.die) {
-                    player.die()
-                }
             }
         }
     }
@@ -257,7 +243,7 @@ export default class Drone {
     spawnRapierDebris() {
         if (this.debrisSourcePieces.length === 0 || !this.physics || !this.physics.world) return
 
-        const rapier = RAPIER 
+        const rapier = RAPIER
         const world = this.physics.world
 
         const worldPos = new THREE.Vector3()
@@ -267,7 +253,6 @@ export default class Drone {
         this.debrisSourcePieces.forEach((piece) => {
             piece.visible = true
 
-            
             piece.updateMatrixWorld(true)
             piece.getWorldPosition(worldPos)
             piece.getWorldQuaternion(worldQuaternion)
@@ -278,7 +263,6 @@ export default class Drone {
             piece.quaternion.copy(worldQuaternion)
             piece.scale.copy(worldScale)
 
-           
             const bodyDesc = rapier.RigidBodyDesc.dynamic()
                 .setTranslation(worldPos.x, worldPos.y, worldPos.z)
                 .setRotation({ x: worldQuaternion.x, y: worldQuaternion.y, z: worldQuaternion.z, w: worldQuaternion.w })
@@ -286,7 +270,7 @@ export default class Drone {
 
             piece.geometry.computeBoundingBox()
             const bounds = piece.geometry.boundingBox
-           
+
             const sizeX = Math.max(0.1, (bounds.max.x - bounds.min.x) * worldScale.x)
             const sizeY = Math.max(0.1, (bounds.max.y - bounds.min.y) * worldScale.y)
             const sizeZ = Math.max(0.1, (bounds.max.z - bounds.min.z) * worldScale.z)
@@ -301,7 +285,7 @@ export default class Drone {
 
             const impulse = {
                 x: (Math.random() - 0.5) * 10.0,
-                y: (Math.random() * 2.0) + 2.0, 
+                y: (Math.random() * 2.0) + 2.0,
                 z: (Math.random() - 0.5) * 10.0
             }
             body.applyImpulse(impulse, true)
@@ -366,6 +350,12 @@ export default class Drone {
 
         if (this.droneGroup) {
             this.scene.remove(this.droneGroup)
+            for (let i=0; i < this.bullets.length; i++) {
+                const bMesh = this.bullets[i]?.mesh ?? this.bullets[i]
+                if (bMesh) {
+                    this.scene.remove(bMesh)
+                }
+            }
         }
     }
 
@@ -378,7 +368,7 @@ export default class Drone {
             this.aimAtPlayer()
             this.shootAtPlayer()
             this.updateDroneBullets()
-            this.checkCollisionWithPlayer()
+            // Removed crashing checkCollisionWithPlayer loop invocation
         } else {
             this.updateRapierDebris()
         }
