@@ -31,7 +31,7 @@ export default class World {
         this.weapon = new Weapon()
         this.wall = new Wall()
         this.drone = new Drone()
-        this.portal = new Portal()
+        // this.portal = new Portal()
         
         
         this.resources.on('groupEnd', (_group) => {
