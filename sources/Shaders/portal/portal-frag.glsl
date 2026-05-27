@@ -14,8 +14,8 @@ void main() {
     vec2 uvFromCenter = vUv - center;
     float distanceToCenter = length(uvFromCenter);
 
-    float twistStrength = .01;
-    float spinSpeed = uTime * -4.0; 
+    float twistStrength = 2.0; 
+    float spinSpeed = uTime * -1.0; 
     float angle = (distanceToCenter * twistStrength) + spinSpeed;
     
     vec2 twistedUv = getRotationMatrix(angle) * uvFromCenter;
@@ -24,14 +24,20 @@ void main() {
     vec4 noise = texture2D(uTexture, finalSpiralUv);
 
     float maxRadius = 0.45;
-    
     float proceduralVortex = distanceToCenter + (noise.r * 0.22);
 
     if (proceduralVortex > maxRadius) {
         discard;
     }
 
-    vec3 vortexColor = vec3(0.95, 0.15, 0.22); 
+    float edgeThickness = 0.05; 
+    
+    float edgeMask = step(maxRadius - edgeThickness, proceduralVortex);
+
+    vec3 yellowColor = vec3(1.0, 1.0, 1.0); 
+    vec3 blackColor  = vec3(0.0, 0.0, 1.0); 
+
+    vec3 vortexColor = mix(blackColor, yellowColor, edgeMask);
 
     gl_FragColor = vec4(vortexColor, 1.0);
 }

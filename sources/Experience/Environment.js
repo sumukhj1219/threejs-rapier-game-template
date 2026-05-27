@@ -13,7 +13,7 @@ export default class Environment {
     }
 
     lights() {
-        const dirLight = new THREE.DirectionalLight(new THREE.Color("white"), 5)
+        const dirLight = new THREE.DirectionalLight(new THREE.Color("white"), 1)
         dirLight.position.set(100, 300, 100)
         dirLight.castShadow = true
 
@@ -45,7 +45,7 @@ export default class Environment {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             this.scene.background = texture;
             this.scene.environment = texture;
-            this.scene.environmentIntensity = 0.5
+            this.scene.environmentIntensity = 0.15
         })
     }
 

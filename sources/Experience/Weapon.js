@@ -209,8 +209,7 @@ export default class Weapon {
         glowGeom.rotateX(Math.PI / 2);
         const glowMat = new THREE.MeshBasicMaterial({
             color: "#ff0000",
-            transparent: true,
-            opacity: 0.5,
+            opacity: 1,
             blending: THREE.AdditiveBlending
         });
         const glow = new THREE.Mesh(glowGeom, glowMat);

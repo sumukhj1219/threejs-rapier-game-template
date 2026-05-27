@@ -9,7 +9,8 @@ import Weapon from './Weapon.js'
 import Wall from './Wall.js'
 import Drone from "./Drone.js"
 import Explosion from './Explosion.js'
-import Portal from './Portal.js'
+import Portal from "./Portal.js"
+
 export default class World {
     constructor(_options) {
         this.experience = new Experience()
@@ -24,16 +25,16 @@ export default class World {
         this.physics = new Physics()
         await this.physics.init()
 
-        // this.environment = new Environment()
-        // this.ground = new Ground()
-        // this.player = new Player()
-        // this.view = new View()
-        // this.weapon = new Weapon()
-        // this.wall = new Wall()
-        // this.drone = new Drone()
+        this.environment = new Environment()
+        this.ground = new Ground()
+        this.player = new Player()
+        this.view = new View()
+        this.weapon = new Weapon()
+        this.wall = new Wall()
         this.portal = new Portal()
-        
-        
+        this.drone = new Drone()
+
+
         this.resources.on('groupEnd', (_group) => {
             if (_group.name === 'base') {
                 this.setBaseGrid()
@@ -48,8 +49,8 @@ export default class World {
         if (this.physics) this.physics.update()
         if (this.view) this.view.update()
         if (this.player) this.player.update()
-        if (this.drone) this.drone.update()
         if (this.portal) this.portal.update()
+        if (this.drone) this.drone.update()
     }
 
     destroy() {
