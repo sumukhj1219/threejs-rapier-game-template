@@ -228,30 +228,63 @@ export default class Player {
         flash.style.left = '0';
         flash.style.width = '100vw';
         flash.style.height = '100vh';
-        flash.style.backgroundColor = 'rgba(255, 0, 0, 0.4)';
+        flash.style.backgroundColor = 'rgba(180, 0, 0, 0.6)'; 
         flash.style.pointerEvents = 'none';
         flash.style.zIndex = '9999';
+        flash.style.boxShadow = 'inset 0 0 100px rgba(0,0,0,0.8)';
         document.body.appendChild(flash);
 
         gsap.to(flash, {
             opacity: 0,
-            duration: 0.4,
+            duration: 0.5,
+            ease: "power2.out",
             onComplete: () => flash.remove()
         });
 
         const cameraInstance = this.experience.camera?.instance
         if (cameraInstance) {
-           
-            const originalX = cameraInstance.position.x
-            const originalY = cameraInstance.position.y
+            gsap.killTweensOf(cameraInstance.rotation);
+
+            const startX = cameraInstance.rotation.x;
+            const startY = cameraInstance.rotation.y;
+            const startZ = cameraInstance.rotation.z;
 
             const shakeTl = gsap.timeline();
 
-            shakeTl.to(cameraInstance.position, { x: originalX + 0.12, y: originalY + 0.08, duration: 0.04 })
-                .to(cameraInstance.position, { x: originalX - 0.10, y: originalY - 0.11, duration: 0.04 })
-                .to(cameraInstance.position, { x: originalX + 0.07, y: originalY + 0.07, duration: 0.04 })
-                .to(cameraInstance.position, { x: originalX - 0.06, y: originalY - 0.04, duration: 0.04 })
-                .to(cameraInstance.position, { x: originalX, y: originalY, duration: 0.04 }); 
+          
+            shakeTl.to(cameraInstance.rotation, {
+                x: startX - 0.08,  
+                y: startY + (Math.random() - 0.5) * 0.05, 
+                z: startZ + 0.06, 
+                duration: 0.03,
+                ease: "power4.out"
+            })
+                .to(cameraInstance.rotation, {
+                    x: startX + 0.05,
+                    y: startY + (Math.random() - 0.5) * 0.04,
+                    z: startZ - 0.04,
+                    duration: 0.04,
+                    ease: "rough({ template: power2.inOut, strength: 2, points: 3, taper: none, randomize: true, clamp: false })"
+                })
+                .to(cameraInstance.rotation, {
+                    x: startX - 0.02,
+                    z: startZ + 0.02,
+                    duration: 0.05,
+                    ease: "power1.inOut"
+                })
+                .to(cameraInstance.rotation, {
+                    x: startX + 0.01,
+                    z: startZ - 0.01,
+                    duration: 0.06,
+                    ease: "power1.inOut"
+                })
+                .to(cameraInstance.rotation, {
+                    x: startX,
+                    y: startY,
+                    z: startZ,
+                    duration: 0.12,
+                    ease: "power2.out"
+                });
         }
     }
 
@@ -269,7 +302,7 @@ export default class Player {
 
     update() {
         if (this.isDead) return
-        
+
         if (this.rigidBody) {
             const position = this.rigidBody.translation();
             const rotation = this.rigidBody.rotation();

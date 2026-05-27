@@ -24,7 +24,8 @@ export default class Portal {
                 uTime:{value: 2.0},
                 uTexture:{value: portalTexture},
             },
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
+            transparent: true
         })
         this.portalMesh = new THREE.Mesh(planeGeometry, planeMaterial)
         this.scene.add(this.portalMesh)

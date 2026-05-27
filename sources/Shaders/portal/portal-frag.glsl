@@ -1,23 +1,37 @@
+uniform float uTime;
 uniform sampler2D uTexture;
 
 varying vec2 vUv;
-varying vec2 vAnimatedUv; 
+
+mat2 getRotationMatrix(float angle) {
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat2(c, -s, s, c);
+}
 
 void main() {
     vec2 center = vec2(0.5, 0.5);
-    float distanceToCenter = distance(vUv, center);
+    vec2 uvFromCenter = vUv - center;
+    float distanceToCenter = length(uvFromCenter);
 
-    vec4 noise = texture2D(uTexture, vAnimatedUv);
+    float twistStrength = .01;
+    float spinSpeed = uTime * -4.0; 
+    float angle = (distanceToCenter * twistStrength) + spinSpeed;
+    
+    vec2 twistedUv = getRotationMatrix(angle) * uvFromCenter;
+    vec2 finalSpiralUv = twistedUv + center;
 
-    float distortedRadius = 0.6 + (noise.r * 0.1);
+    vec4 noise = texture2D(uTexture, finalSpiralUv);
 
-    if (distanceToCenter > distortedRadius) {
+    float maxRadius = 0.45;
+    
+    float proceduralVortex = distanceToCenter + (noise.r * 0.22);
+
+    if (proceduralVortex > maxRadius) {
         discard;
     }
-    
-    float alpha = smoothstep(distortedRadius, distortedRadius - 0.01, distanceToCenter);
 
-    vec4 textureColor = texture2D(uTexture, vUv);
+    vec3 vortexColor = vec3(0.95, 0.15, 0.22); 
 
-    gl_FragColor = vec4(vec3(1.0), textureColor.a * alpha);
+    gl_FragColor = vec4(vortexColor, 1.0);
 }

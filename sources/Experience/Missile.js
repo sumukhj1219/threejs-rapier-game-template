@@ -20,7 +20,7 @@ export default class Missile {
         this.mesh = new THREE.Group()
         this.mesh.position.copy(spawnPosition)
 
-        const bodyGeom = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 16)
+        const bodyGeom = new THREE.CylinderGeometry(0.05, 0.05, 1, 16)
         bodyGeom.rotateX(Math.PI / 2) 
         const bodyMat = new THREE.MeshStandardMaterial({ 
             color: "#444444", 
@@ -30,18 +30,18 @@ export default class Missile {
         const body = new THREE.Mesh(bodyGeom, bodyMat)
         this.mesh.add(body)
 
-        const tipGeom = new THREE.ConeGeometry(0.12, 0.3, 16)
+        const tipGeom = new THREE.ConeGeometry(0.05, 0.3, 16)
         tipGeom.rotateX(Math.PI / 2)
-        tipGeom.translate(0, 0, 0.55) // Push to the front of the rocket body
-        const tipMat = new THREE.MeshBasicMaterial({ color: "#ff3300" })
+        tipGeom.translate(0, 0, 0.55) 
+        const tipMat = new THREE.MeshBasicMaterial({ color: "#3c3735" })
         const tip = new THREE.Mesh(tipGeom, tipMat)
         this.mesh.add(tip)
 
         const trailGeom = new THREE.CylinderGeometry(0.08, 0.01, 0.4, 8)
         trailGeom.rotateX(Math.PI / 2)
-        trailGeom.translate(0, 0, -0.5) // Position at rear exhaust
+        trailGeom.translate(0, 0, -0.5) 
         const trailMat = new THREE.MeshBasicMaterial({
-            color: "#ffaa00",
+            color: "#9b9892",
             transparent: true,
             opacity: 0.8,
             blending: THREE.AdditiveBlending
