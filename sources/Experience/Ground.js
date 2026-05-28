@@ -17,16 +17,16 @@ export default class Ground {
         const loader = new THREE.TextureLoader()
         const basePath = '/pbr/tile/'
 
-        const colorTexture = loader.load(`${basePath}Tiles107_4K-JPG_Color.jpg`)
-        const aoTexture = loader.load(`${basePath}Tiles107_4K-JPG_AmbientOcclusion.jpg`)
-        const displacementTexture = loader.load(`${basePath}Tiles107_4K-JPG_Displacement.jpg`)
-        const normalTexture = loader.load(`${basePath}Tiles107_4K-JPG_NormalGL.jpg`)
-        const roughnessTexture = loader.load(`${basePath}Tiles107_4K-JPG_Roughness.jpg`)
+        const colorTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Color.jpg`)
+        const aoTexture = loader.load(`${basePath}Tiles133D_4K-JPG_AmbientOcclusion.jpg`)
+        const displacementTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Displacement.jpg`)
+        const normalTexture = loader.load(`${basePath}Tiles133D_4K-JPG_NormalGL.jpg`)
+        const roughnessTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Roughness.jpg`)
 
         const textures = [colorTexture, aoTexture, displacementTexture, normalTexture, roughnessTexture]
         textures.forEach((texture) => {
             texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-            texture.repeat.set(5, 5)
+            texture.repeat.set(10, 10)
         })
 
         const maxAnisotropy = this.experience.renderer.instance.capabilities.getMaxAnisotropy() || 1;

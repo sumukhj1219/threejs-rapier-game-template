@@ -28,7 +28,7 @@ export default class Portal {
             transparent: true
         })
         this.portalMesh = new THREE.Mesh(planeGeometry, planeMaterial)
-        this.portalMesh.position.set(0, 30, 46.85)
+        this.portalMesh.position.set(0, 30, 46.90)
         this.portalMesh.scale.setScalar(30)
         this.scene.add(this.portalMesh)
     }

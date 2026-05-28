@@ -23,21 +23,28 @@ void main() {
 
     vec4 noise = texture2D(uTexture, finalSpiralUv);
 
-    float maxRadius = 0.45;
-    float proceduralVortex = distanceToCenter + (noise.r * 0.22);
+    float maxRadius = 0.38;
+    float proceduralVortex = distanceToCenter + (noise.r * 0.18);
 
-    if (proceduralVortex > maxRadius) {
-        discard;
-    }
-
-    float edgeThickness = 0.05; 
+    float innerMask = smoothstep(maxRadius - 0.04, maxRadius - 0.08, proceduralVortex);
     
-    float edgeMask = step(maxRadius - edgeThickness, proceduralVortex);
+    float coreBeamMask = smoothstep(maxRadius, maxRadius - 0.04, proceduralVortex);
+    
+    float glowGlowFalloff = 0.12; 
+    float outerGlowMask = smoothstep(maxRadius + glowGlowFalloff, maxRadius - 0.02, proceduralVortex);
 
-    vec3 yellowColor = vec3(1.0, 1.0, 1.0); 
-    vec3 blackColor  = vec3(0.0, 0.0, 1.0); 
+    float pulse = 1.0 + (sin(uTime * 8.0) * 0.15);
 
-    vec3 vortexColor = mix(blackColor, yellowColor, edgeMask);
+    vec3 innerColor = vec3(0.1, 0.1, 0.15); 
+    
+    vec3 coreWhiteBeam = vec3(1.0, 1.0, 1.0); 
+    
+    vec3 glowAuraColor = vec3(0.7, 0.65, 0.75); 
 
-    gl_FragColor = vec4(vortexColor, 1.0);
+    vec3 finalRGB = mix(glowAuraColor * outerGlowMask * 2.5 * pulse, coreWhiteBeam * 4.0, coreBeamMask);
+    finalRGB = mix(finalRGB, innerColor, innerMask);
+
+    float finalAlpha = outerGlowMask;
+
+    gl_FragColor = vec4(finalRGB, finalAlpha);
 }

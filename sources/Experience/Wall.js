@@ -8,8 +8,8 @@ export default class Wall {
         this.experience = new Experience()
         this.scene = this.experience.scene
         this.physicsWorld = this.experience.world.physics.world
-        this.walls=[]
-        this.path=null
+        this.walls = []
+        this.path = null
         this.init()
     }
 
@@ -17,16 +17,16 @@ export default class Wall {
         const loader = new THREE.TextureLoader()
         const basePath = '/pbr/tile/'
 
-        const colorTexture = loader.load(`${basePath}Tiles107_4K-JPG_Color.jpg`)
-        const aoTexture = loader.load(`${basePath}Tiles107_4K-JPG_AmbientOcclusion.jpg`)
-        const displacementTexture = loader.load(`${basePath}Tiles107_4K-JPG_Displacement.jpg`)
-        const normalTexture = loader.load(`${basePath}Tiles107_4K-JPG_NormalGL.jpg`)
-        const roughnessTexture = loader.load(`${basePath}Tiles107_4K-JPG_Roughness.jpg`)
+        const colorTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Color.jpg`)
+        const aoTexture = loader.load(`${basePath}Tiles133D_4K-JPG_AmbientOcclusion.jpg`)
+        const displacementTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Displacement.jpg`)
+        const normalTexture = loader.load(`${basePath}Tiles133D_4K-JPG_NormalGL.jpg`)
+        const roughnessTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Roughness.jpg`)
 
         const textures = [colorTexture, aoTexture, displacementTexture, normalTexture, roughnessTexture]
         textures.forEach((texture) => {
             texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-            texture.repeat.set(20, 10)
+            texture.repeat.set(10, 10)
             texture.needsUpdate = true
         })
 
@@ -59,8 +59,8 @@ export default class Wall {
                         roughnessMap: roughnessTexture,
                         displacementMap: displacementTexture,
                         displacementScale: 0.1,
-                        roughness: 1,
-                        metalness: 0,
+                        roughness: 0.5,
+                        metalness: 0.5,
                         side: THREE.DoubleSide
                     })
                     node.castShadow = true
@@ -72,6 +72,23 @@ export default class Wall {
                     console.log('[Wall] Found path node:', node.name, 'type:', node.type)
                     this.path = node
                     node.visible = false
+                }
+                if (node.name && node.name.includes("Pole")) {
+                    node.material = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color("gray"),
+                        roughness: 0.8,
+                        metalness: 0.2
+                    })
+                }
+                if (node.name && node.name.includes("Plane")) {
+                    node.material = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color("gray"),
+                        roughness: 0.8,
+                        metalness: 0.75,
+                        side: THREE.DoubleSide
+                    })
+                    node.castShadow = true
+                    node.receiveShadow = true
                 }
             })
             console.log('[Wall] Path set to:', this.path?.name, 'geometry:', !!this.path?.geometry)
