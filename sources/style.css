@@ -7,14 +7,41 @@
 html,
 body {
     overflow: hidden;
+    background-color: #000;
 }
 
 .experience {
     position: fixed;
     width: 100vw;
     height: 100vh;
+    z-index: 1;
 }
 
+/* ========================================================
+   NEW: CORNER SCREEN BLUR OVERLAY (VIGNETTE STYLE)
+   ======================================================== */
+.screen-blur-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Crucial: Allows clicking through the blur into your game */
+    z-index: 2;          /* Sits cleanly over the 3D canvas scene */
+
+    /* The backdrop-filter applies a heavy gaussian blur to pixels behind it */
+    backdrop-filter: blur(8px);
+
+    /* This mask uses a radial gradient to hide the blur in the center 
+       and reveal the blur seamlessly as it reaches the screen corners.
+    */
+    -webkit-mask-image: radial-gradient(circle, transparent 40%, black 85%);
+    mask-image: radial-gradient(circle, transparent 40%, black 85%);
+}
+
+/* ========================================================
+   CROSSHAIR ADJUSTMENT
+   ======================================================== */
 .cod-crosshair {
     position: fixed;
     top: 50%;
@@ -27,6 +54,7 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.1s ease-out;
+    z-index: 3; /* Kept higher than the blur overlay so the crosshair stays perfectly sharp */
 }
 
 .cod-crosshair div {

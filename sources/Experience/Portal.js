@@ -25,11 +25,11 @@ export default class Portal {
                 uTexture:{value: portalTexture},
             },
             side: THREE.DoubleSide,
-            transparent: true
+            transparent: true,
         })
         this.portalMesh = new THREE.Mesh(planeGeometry, planeMaterial)
-        this.portalMesh.position.set(0, 30, 46.90)
-        this.portalMesh.scale.setScalar(30)
+        this.portalMesh.position.set(0, 50, 46.90)
+        this.portalMesh.scale.setScalar(40)
         this.scene.add(this.portalMesh)
     }
 

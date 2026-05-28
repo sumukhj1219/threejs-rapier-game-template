@@ -37,7 +37,7 @@ void main() {
 
     vec3 innerColor = vec3(0.1, 0.1, 0.15); 
     
-    vec3 coreWhiteBeam = vec3(1.0, 1.0, 1.0); 
+    vec3 coreWhiteBeam = vec3(0.8, 0.7, 0.85); 
     
     vec3 glowAuraColor = vec3(0.7, 0.65, 0.75); 
 
