@@ -1,14 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Three.js - Template - Complex</title>
-        <link rel="stylesheet" href="./style.css">
-    </head>
-    <body>
-        <div class="experience"></div>
-        <div class="screen-blur-overlay"></div>
-        <script type="module" src="./index.js"></script>
-    </body>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Three.js - Template - Complex</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="experience"></div>
+    <div class="screen-blur-overlay">
+        <div class="death-text"></div>
+        <div class="restart-btn">Press F to restart</div>
+    </div>
+    <div class="hud-container">
+        <div class="weapon-hud">
+            <div class="weapon-slot inactive side-slot-3">
+                <span class="slot-num">3</span>
+                <span class="weapon-name">FRAG</span>
+            </div>
+            <div class="weapon-slot inactive side-slot-2">
+                <span class="slot-num">2</span>
+                <span class="weapon-name">STALKER</span>
+            </div>
+            <div class="weapon-slot active main-slot-1">
+                <span class="slot-num">1</span>
+                <span class="weapon-name">WARDEN</span>
+            </div>
+        </div>
+
+        <div class="vitals-hud">
+            <div class="ammo-counter">
+                <span id="ammo-current">50</span><span class="ammo-separator">/</span><span id="ammo-max">50</span>
+            </div>
+            <div class="bars-container">
+                <div class="bar-row">
+                    <div class="bar-fill health-bar" id="hud-health-bar"></div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-fill stamina-bar" id="hud-stamina-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="./index.js"></script>
+</body>
+
 </html>

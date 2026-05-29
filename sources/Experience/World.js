@@ -47,7 +47,7 @@ export default class World {
 
     update() {
         if (this.physics) this.physics.update()
-        if (this.view) this.view.update()
+        if (this.view && !this.player.isDead) this.view.update()
         if (this.player) this.player.update()
         if (this.portal) this.portal.update()
         if (this.drone) this.drone.update()

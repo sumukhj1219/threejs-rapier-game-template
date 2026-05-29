@@ -3,12 +3,16 @@ import * as THREE from 'three'
 import RAPIER from "@dimforge/rapier3d-compat";
 import Weapon from "./Weapon";
 import gsap from "gsap";
+import { DEATH_QUOTES } from "./Utils/DeathQuotes";
 
 export default class Player {
     constructor() {
         this.experience = new Experience()
         this.scene = this.experience.scene
         this.physicsWorld = this.experience.world.physics.world
+
+        this.isDead = false
+        this.health = 100
 
         this.init()
         this.setPhysics()
@@ -64,6 +68,7 @@ export default class Player {
         this.canJump = true
 
         window.addEventListener("keydown", (ev) => {
+            if (this.isDead) return // Ignore inputs if dead
             const key = ev.key.toLowerCase();
             if (key === 'shift') {
                 this.keys.shift = true;
@@ -81,6 +86,12 @@ export default class Player {
                     this.jump();
                 }
                 this.keys[key] = true;
+            }
+        });
+
+        window.addEventListener('keydown', (ev) => {
+            if (this.isDead && ev.key.toLowerCase() === 'f') {
+                window.location.reload();
             }
         });
 
@@ -159,6 +170,11 @@ export default class Player {
 
         const position = this.rigidBody.translation();
         this.meshInstance.position.copy(position);
+
+        const staminaBarElement = document.getElementById('hud-stamina-bar');
+        if (staminaBarElement) {
+            staminaBarElement.style.transform = `scaleX(${this.stamina / this.maxStamina})`;
+        }
     }
 
     tryStartSlide() {
@@ -219,8 +235,10 @@ export default class Player {
         }, 1500);
     }
 
-    takeDamage() {
+    takeDamage(amount = 25) {
         if (this.isDead) return
+
+        this.health = Math.max(0, this.health - amount);
 
         const flash = document.createElement('div');
         flash.style.position = 'fixed';
@@ -228,7 +246,7 @@ export default class Player {
         flash.style.left = '0';
         flash.style.width = '100vw';
         flash.style.height = '100vh';
-        flash.style.backgroundColor = 'rgba(180, 0, 0, 0.6)'; 
+        flash.style.backgroundColor = 'rgba(180, 0, 0, 0.6)';
         flash.style.pointerEvents = 'none';
         flash.style.zIndex = '9999';
         flash.style.boxShadow = 'inset 0 0 100px rgba(0,0,0,0.8)';
@@ -251,11 +269,10 @@ export default class Player {
 
             const shakeTl = gsap.timeline();
 
-          
             shakeTl.to(cameraInstance.rotation, {
-                x: startX - 0.08,  
-                y: startY + (Math.random() - 0.5) * 0.05, 
-                z: startZ + 0.06, 
+                x: startX - 0.08,
+                y: startY + (Math.random() - 0.5) * 0.05,
+                z: startZ + 0.06,
                 duration: 0.03,
                 ease: "power4.out"
             })
@@ -286,18 +303,52 @@ export default class Player {
                     ease: "power2.out"
                 });
         }
+
+        if (this.health <= 0) {
+            this.die();
+        }
+
+        const healthBarElement = document.getElementById('hud-health-bar');
+        if (healthBarElement) {
+            healthBarElement.style.transform = `scaleX(${this.health / 100})`;
+        }
     }
 
     die() {
-        this.isDead = true
+        const healthBarElement = document.getElementById('hud-health-bar');
+        if (healthBarElement) healthBarElement.style.transform = 'scaleX(0)';
 
-        this.scene.remove(this.meshInstance)
+        const hudContainer = document.querySelector('.hud-container');
+        if (hudContainer) hudContainer.style.display = 'none';
+
+        this.isDead = true;
+        this.scene.remove(this.meshInstance);
 
         if (this.rigidBody && this.physicsWorld) {
-            this.physicsWorld.removeRigidBody(this.rigidBody)
-            this.rigidBody = null
+            this.physicsWorld.removeRigidBody(this.rigidBody);
+            this.rigidBody = null;
         }
-        console.log("Player died!")
+
+        console.log("Player died!");
+
+        const blurOverlay = document.querySelector('.screen-blur-overlay');
+        const deathTextElement = document.querySelector('.screen-blur-overlay .death-text');
+        const crosshair = document.querySelector('.cod-crosshair');
+
+        const randomIndex = Math.floor(Math.random() * DEATH_QUOTES.length);
+        const selectedQuote = DEATH_QUOTES[randomIndex];
+
+        if (deathTextElement) {
+            deathTextElement.innerText = selectedQuote;
+        }
+
+        if (blurOverlay) {
+            blurOverlay.classList.add('player-dead');
+        }
+
+        if (crosshair) {
+            crosshair.classList.add('hidden');
+        }
     }
 
     update() {
@@ -311,8 +362,8 @@ export default class Player {
             this.meshInstance.quaternion.copy(rotation);
         }
 
-        this.movements()
-        if (this.weapon)
-            this.weapon.update()
+        if (this.weapon && !this.isDead)
+            this.movements()
+        this.weapon.update()
     }
 }

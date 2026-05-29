@@ -163,6 +163,12 @@ export default class Weapon {
             duration: 0.2,
             ease: "power2.out"
         }, "<");
+
+        tl.add(() => {
+            this.currentAmmo = this.maxAmmo;
+            const currentAmmoText = document.getElementById('ammo-current');
+            if (currentAmmoText) currentAmmoText.innerText = this.currentAmmo;
+        }, "+=0.1");
     }
 
 
@@ -225,6 +231,8 @@ export default class Weapon {
         });
 
         this.flashMuzzle();
+        const currentAmmoText = document.getElementById('ammo-current');
+        if (currentAmmoText) currentAmmoText.innerText = this.currentAmmo;
     }
 
     applyBlastImpact() {
@@ -253,7 +261,7 @@ export default class Weapon {
 
         gsap.to(this.container.rotation, {
             x: -0.3,
-            z: 0.1, 
+            z: 0.1,
             duration: 0.05,
             ease: "power4.out",
             onComplete: () => {
