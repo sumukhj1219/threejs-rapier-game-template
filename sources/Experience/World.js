@@ -10,6 +10,7 @@ import Wall from './Wall.js'
 import Drone from "./Drone.js"
 import Explosion from './Explosion.js'
 import Portal from "./Portal.js"
+import Tent from './Tent.js'
 
 export default class World {
     constructor(_options) {
@@ -85,6 +86,7 @@ export default class World {
         this.view = new View()
         this.portal = new Portal()
         this.drone = new Drone()
+        this.tent = new Tent()
 
         this.worldBuilt = true
     }
