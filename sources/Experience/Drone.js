@@ -8,11 +8,13 @@ import MuzzleFlash from './MuzzleFlash.js';
 import Missile from './Missile.js';
 
 export default class Drone {
-    constructor(_options) {
+    constructor(_options = {}) {
         this.experience = new Experience()
         this.scene = this.experience.scene
 
         this.physics = this.experience.world?.physics
+
+        this.pathIndex = _options.pathIndex || 0
 
         this.collisonDistance = 1.0
         this.hasBeenHit = false
@@ -40,7 +42,7 @@ export default class Drone {
         this.resources = this.experience.resources
 
         this.init()
-        this.setupAudio() 
+        this.setupAudio()
     }
 
     init() {
@@ -56,7 +58,7 @@ export default class Drone {
         }
 
         this.droneGroup = new THREE.Group()
-        this.droneModel = gltf.scene.clone() 
+        this.droneModel = gltf.scene.clone()
 
         this.droneModel.rotation.y = Math.PI
 
@@ -85,7 +87,7 @@ export default class Drone {
         this.droneGroup.scale.set(0.5, 0.5, 0.5)
 
         this.scene.add(this.droneGroup)
-        console.log('[Drone] Air surveillance assets deployed.')
+        console.log(`[Drone] Drone assigned to path index ${this.pathIndex} deployed.`);
     }
 
     setupAudio() {
@@ -102,7 +104,7 @@ export default class Drone {
         const audioBuffer = this.resources.items['blastSFX'] || this.resources.items['shootSFX']
         if (audioBuffer) {
             this.explosionSound.setBuffer(audioBuffer)
-            this.explosionSound.setRefDistance(10) 
+            this.explosionSound.setRefDistance(10)
             this.explosionSound.setMaxDistance(100)
             this.explosionSound.setVolume(5.0)
         }
@@ -111,9 +113,9 @@ export default class Drone {
         const humBuffer = this.resources.items['droneSFX']
         if (humBuffer && this.droneGroup) {
             this.flyingSound.setBuffer(humBuffer)
-            this.flyingSound.setRefDistance(3)       
+            this.flyingSound.setRefDistance(3)
             this.flyingSound.setMaxDistance(45)
-            this.flyingSound.setLoop(true)            
+            this.flyingSound.setLoop(true)
             this.flyingSound.setVolume(5)
 
             this.droneGroup.add(this.flyingSound)
@@ -124,9 +126,10 @@ export default class Drone {
     checkForPath() {
         if (this.curve) return
         const wall = this.experience.world?.wall
-        if (!wall || !wall.path) return
 
-        this.pathMesh = wall.path
+        if (!wall || !wall.paths || !wall.paths[this.pathIndex]) return
+
+        this.pathMesh = wall.paths[this.pathIndex]
         this.setupPath()
     }
 
@@ -150,20 +153,28 @@ export default class Drone {
     movements() {
         if (!this.curve || this.hasBeenHit || !this.droneGroup) return
 
-        this.progress += 0.0005 * this.droneSpeed
+        const curveLength = this.curve.getLength()
+
+        const distancePerFrame = 0.75 * this.droneSpeed
+        this.progress += distancePerFrame / curveLength
+
         if (this.progress > 1) this.progress = 0
 
         const currentPos = this.curve.getPointAt(this.progress)
         this.droneGroup.position.copy(currentPos)
 
         const lookAtTarget = this.curve.getPointAt((this.progress + 0.01) % 1)
-        this.droneGroup.lookAt(lookAtTarget)
+        if (lookAtTarget) {
+            this.droneGroup.lookAt(lookAtTarget)
+        }
 
         const time = Date.now() * 0.002
         this.droneGroup.position.y += Math.sin(time) * 0.05
 
         const tangent = this.curve.getTangentAt(this.progress)
-        this.droneGroup.rotation.z = -tangent.x * 0.8
+        if (tangent) {
+            this.droneGroup.rotation.z = -tangent.x * 0.8
+        }
     }
 
     animate() {
@@ -211,6 +222,29 @@ export default class Drone {
         if (!player || !player.meshInstance) return
 
         if (this.shotsFired >= this.maxShots) return
+
+        // --- ENHANCED WORLD CORNER SAFE-ZONE CHECK ---
+        const tent = this.experience.world?.tent
+        if (tent && tent.position) {
+            // Use Three.js world extraction methods to bypass local hierarchy offsets
+            const playerWorldPos = new THREE.Vector3()
+            player.meshInstance.getWorldPosition(playerWorldPos)
+
+            // Calculate 2D flat distance tracking across X and Z planes
+            const dx = playerWorldPos.x - tent.position.x
+            const dz = playerWorldPos.z - tent.position.z
+            const distanceToTentCenter = Math.sqrt(dx * dx + dz * dz)
+
+            // OPTIONAL DEBUGGING: Uncomment the line below to see exact math readouts in your browser console
+            // console.log(`Distance to Tent Center: ${distanceToTentCenter.toFixed(2)} units.`);
+
+            // Widened safety net threshold to 5.5 to cover wall clearances and player bounding boxes
+            if (distanceToTentCenter < 5.5) {
+                this.shootCooldown = 200 // Lock the weapons systems continuously while inside
+                return
+            }
+        }
+        // ---------------------------------------------
 
         this.shootCooldown -= 16
 
@@ -357,7 +391,7 @@ export default class Drone {
     applyBlastForceField(originPoint) {
         if (!this.activeDebris.length) return
 
-        const blastPower = 45.0 
+        const blastPower = 45.0
         const debrisPos = new THREE.Vector3()
 
         this.activeDebris.forEach((debris) => {
@@ -371,10 +405,10 @@ export default class Drone {
             const pushMagnitude = blastPower / (distance * distance)
             forceDirection.multiplyScalar(pushMagnitude)
 
-            debris.body.applyImpulse({ 
-                x: forceDirection.x, 
-                y: forceDirection.y + 5.0, 
-                z: forceDirection.z 
+            debris.body.applyImpulse({
+                x: forceDirection.x,
+                y: forceDirection.y + 5.0,
+                z: forceDirection.z
             }, true)
         })
     }
@@ -409,7 +443,6 @@ export default class Drone {
         this.hasBeenHit = true
         console.log("impact point", impactPoint)
 
-        // Kill the ambient engine hum instantly on breakdown
         if (this.flyingSound && this.flyingSound.isPlaying) {
             this.flyingSound.stop()
         }
@@ -429,7 +462,7 @@ export default class Drone {
         }
 
         this.spawnRapierDebris()
-        
+
         this.applyBlastForceField(impactPoint)
 
         if (this.droneGroup) {

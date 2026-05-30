@@ -7,19 +7,16 @@ export default class Wall {
     constructor() {
         this.experience = new Experience()
         this.scene = this.experience.scene
-        
-        // FIX: Map the missing resources object from your main Experience instance
         this.resources = this.experience.resources
-        
         this.physicsWorld = this.experience.world.physics.world
+        
         this.walls = []
-        this.path = null
+        this.paths = [] 
         
         this.init()
     }
 
     init() {
-        // Safe guard check to avoid console crashes if this class runs out of sequence
         if (!this.resources || !this.resources.items) {
             console.warn('[Wall] Resource repository has not finished downloading yet.')
             return
@@ -80,11 +77,13 @@ export default class Wall {
                 this.setPhysics(node)
                 this.walls.push(node)
             }
-            if (node.name && node.name.includes("Path")) {
+            
+            if (node.name && node.name.startsWith("Path")) {
                 console.log('[Wall] Found path node:', node.name, 'type:', node.type)
-                this.path = node
                 node.visible = false
+                this.paths.push(node)
             }
+            
             if (node.name && node.name.includes("Pole")) {
                 node.material = new THREE.MeshStandardMaterial({
                     color: new THREE.Color("gray"),
@@ -104,7 +103,7 @@ export default class Wall {
             }
         })
 
-        console.log('[Wall] Path set to:', this.path?.name, 'geometry:', !!this.path?.geometry)
+        console.log(`[Wall] Registered ${this.paths.length} distinct path routes.`)
         this.scene.add(this.meshInstance)
     }
 
@@ -113,26 +112,15 @@ export default class Wall {
             console.warn('[Wall] Rapier physics world context not accessible yet.')
             return
         }
-
         const bbox = new THREE.Box3().setFromObject(mesh)
-
         const size = new THREE.Vector3()
         bbox.getSize(size)
-
         const center = new THREE.Vector3()
         bbox.getCenter(center)
 
-        let bodyDesc = RAPIER.RigidBodyDesc.fixed()
-            .setTranslation(center.x, center.y, center.z)
-
+        let bodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(center.x, center.y, center.z)
         let body = this.physicsWorld.createRigidBody(bodyDesc)
-
-        let colliderDesc = RAPIER.ColliderDesc.cuboid(
-            size.x / 2,
-            size.y / 2,
-            size.z / 2
-        )
-
+        let colliderDesc = RAPIER.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
         this.physicsWorld.createCollider(colliderDesc, body)
     }
 }

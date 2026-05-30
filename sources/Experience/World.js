@@ -23,6 +23,10 @@ export default class World {
         this.loadingBar = document.getElementById('loading-bar')
         this.loadingStatusText = document.querySelector('.loading-status')
 
+        // Array to manage all active drone instances
+        this.drones = []
+        this.tent = null // Explicitly declare placeholder for safe zone reference
+
         this.worldBuilt = false
 
         this.init()
@@ -79,14 +83,24 @@ export default class World {
         this.environment = new Environment()
         
         this.ground = new Ground()   
-        this.wall = new Wall()       
+        this.wall = new Wall() // Spawns first, filling the wall.paths array       
         this.weapon = new Weapon()   
+        
+        // FIX: Initialize the tent FIRST before players or enemies query it
+        this.tent = new Tent()
         
         this.player = new Player()
         this.view = new View()
         this.portal = new Portal()
-        this.drone = new Drone()
-        this.tent = new Tent()
+
+        const totalTracks = (this.wall.paths && this.wall.paths.length > 0) ? this.wall.paths.length : 3;
+        
+        for (let i = 0; i < totalTracks; i++) {
+            const droneInstance = new Drone({ pathIndex: i })
+            this.drones.push(droneInstance)
+        }
+
+        console.log(`[World] Deployment synchronized. ${this.drones.length} drones matched to track curves.`);
 
         this.worldBuilt = true
     }
@@ -118,7 +132,10 @@ export default class World {
         if (this.view && this.player && !this.player.isDead) this.view.update()
         if (this.player) this.player.update()
         if (this.portal) this.portal.update()
-        if (this.drone) this.drone.update()
+        
+        this.drones.forEach((drone) => {
+            drone.update()
+        })
     }
 
     destroy() {}
