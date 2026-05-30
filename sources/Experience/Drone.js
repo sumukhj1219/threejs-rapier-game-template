@@ -223,28 +223,20 @@ export default class Drone {
 
         if (this.shotsFired >= this.maxShots) return
 
-        // --- ENHANCED WORLD CORNER SAFE-ZONE CHECK ---
         const tent = this.experience.world?.tent
         if (tent && tent.position) {
-            // Use Three.js world extraction methods to bypass local hierarchy offsets
             const playerWorldPos = new THREE.Vector3()
             player.meshInstance.getWorldPosition(playerWorldPos)
 
-            // Calculate 2D flat distance tracking across X and Z planes
             const dx = playerWorldPos.x - tent.position.x
             const dz = playerWorldPos.z - tent.position.z
             const distanceToTentCenter = Math.sqrt(dx * dx + dz * dz)
 
-            // OPTIONAL DEBUGGING: Uncomment the line below to see exact math readouts in your browser console
-            // console.log(`Distance to Tent Center: ${distanceToTentCenter.toFixed(2)} units.`);
-
-            // Widened safety net threshold to 5.5 to cover wall clearances and player bounding boxes
             if (distanceToTentCenter < 5.5) {
-                this.shootCooldown = 200 // Lock the weapons systems continuously while inside
+                this.shootCooldown = 200
                 return
             }
         }
-        // ---------------------------------------------
 
         this.shootCooldown -= 16
 
@@ -442,6 +434,22 @@ export default class Drone {
     die(impactPoint) {
         this.hasBeenHit = true
         console.log("impact point", impactPoint)
+
+        for (let i = this.droneBullets.length - 1; i >= 0; i--) {
+            const missile = this.droneBullets[i]
+            if (missile && missile.mesh) {
+                if (typeof Explosion === 'function') {
+                    const missilePos = new THREE.Vector3()
+                    missile.mesh.getWorldPosition(missilePos)
+                    new Explosion(missilePos)
+                }
+                this.scene.remove(missile.mesh)
+                if (missile.destroy) {
+                    missile.destroy()
+                }
+            }
+        }
+        this.droneBullets = []
 
         if (this.flyingSound && this.flyingSound.isPlaying) {
             this.flyingSound.stop()

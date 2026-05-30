@@ -11,7 +11,7 @@ export default class Wall {
         this.physicsWorld = this.experience.world.physics.world
         
         this.walls = []
-        this.paths = [] 
+        this.paths = [] // Changed from this.path = null to an array
         
         this.init()
     }
@@ -78,6 +78,7 @@ export default class Wall {
                 this.walls.push(node)
             }
             
+            // Matches 'Path', 'Path.01', 'Path.02', etc.
             if (node.name && node.name.startsWith("Path")) {
                 console.log('[Wall] Found path node:', node.name, 'type:', node.type)
                 node.visible = false
