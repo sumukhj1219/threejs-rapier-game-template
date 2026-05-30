@@ -16,7 +16,10 @@ export default class Weapon {
 
         this.experience = new Experience();
         this.scene = this.experience.scene;
-        this.camera = this.experience.camera.instance;
+        
+        this.resources = this.experience.resources;
+        
+        this.camera = this.experience.camera?.instance || this.experience.camera;
 
         const oldContainer = this.camera.getObjectByName("weaponContainer");
         if (oldContainer) this.camera.remove(oldContainer);
@@ -31,33 +34,51 @@ export default class Weapon {
         this.init();
         this.setupEventListeners();
         this.createCrosshair()
-
     }
 
     init() {
-        const loader = new GLTFLoader();
-        loader.load("/model/gun.glb", (gltf) => {
-            this.gun = gltf.scene;
-            this.gun.scale.set(0.5, 0.5, 0.5);
-            this.gun.position.set(0.2, -0.4, -1.5);
-            this.gun.rotation.y = -Math.PI / 2;
+        if (!this.resources || !this.resources.items) {
+            console.warn('[Weapon] Waiting for asset inventory initialization context...')
+            return
+        }
 
-            this.gun.traverse((node) => {
-                if (node.isMesh && node.material) {
-                    node.material.roughness = 0.1;
-                    node.material.metalness = 1;
-                }
-            });
-            this.gun.castShadow = true;
-            this.gun.receiveShadow = true;
+        const gltf = this.resources.items['gunModel']
+        if (!gltf) {
+            console.error('[Weapon] Gun model asset missing from cache dictionary.')
+            return
+        }
 
-            this.container.add(this.gun);
-            this.camera.add(this.container);
-            if (!this.camera.parent) this.scene.add(this.camera);
-        });
+        this.gun = gltf.scene.clone()
+
+        this.gun.scale.set(0.5, 0.5, 0.5)
+        this.gun.position.set(0.2, -0.4, -1.5)
+        this.gun.rotation.y = -Math.PI / 2
+
+        this.gun.traverse((node) => {
+            if (node.isMesh && node.material) {
+                node.material.roughness = 0.1
+                node.material.metalness = 1
+            }
+            if (node.isMesh) {
+                node.castShadow = true
+                node.receiveShadow = true
+            }
+        })
+
+        this.container.add(this.gun)
+        this.camera.add(this.container)
+
+        if (!this.camera.parent) {
+            this.scene.add(this.camera)
+        }
+
+        console.log('[Weapon] Armament systems assembled.')
     }
 
     setupEventListeners() {
+        if (this.eventsBound) return;
+        this.eventsBound = true;
+
         window.addEventListener('mousedown', () => {
             this.fire();
         });
@@ -68,15 +89,16 @@ export default class Weapon {
     }
 
     breathe() {
+        if (!this.experience.time || !this.container) return;
         const elapsed = this.experience.time.elapsed * 0.002;
         const movement = Math.sin(elapsed) * 0.002;
 
         this.container.position.y = movement;
-
         this.container.rotation.z = Math.sin(elapsed * 0.05) * 0.01;
     }
 
     slidePose() {
+        if (!this.container) return;
         const player = this.experience.world?.player
         const sliding = Boolean(player && player.sliding)
 
@@ -90,6 +112,7 @@ export default class Weapon {
     }
 
     sprintPose() {
+        if (!this.container) return;
         const player = this.experience.world?.player
         const sprinting = Boolean(player && player.isSprinting)
 
@@ -118,7 +141,7 @@ export default class Weapon {
     }
 
     reload() {
-        if (this.isReloading) return;
+        if (this.isReloading || !this.container) return;
         this.isReloading = true;
 
         const tl = gsap.timeline({
@@ -149,7 +172,6 @@ export default class Weapon {
             ease: "power2.inOut"
         }, "<");
 
-
         tl.add(() => { this.currentAmmo = this.maxAmmo; }, "+=0.1");
 
         tl.to(this.container.position, {
@@ -171,8 +193,8 @@ export default class Weapon {
         }, "+=0.1");
     }
 
-
     flashMuzzle() {
+        if (!this.container) return;
         const geometry = new THREE.PlaneGeometry(0.5, 0.5);
         const material = new THREE.ShaderMaterial({
             vertexShader: flashVertexShader,
@@ -192,17 +214,15 @@ export default class Weapon {
 
         const duration = 50;
         setTimeout(() => {
-            this.container.remove(flash);
+            if (this.container) this.container.remove(flash);
             geometry.dispose();
             material.dispose();
         }, duration);
     }
 
     fire() {
-        if (this.currentAmmo <= 0) return;
+        if (this.currentAmmo <= 0 || !this.container) return;
         this.currentAmmo--;
-
-
 
         const bulletGroup = new THREE.Group();
 
@@ -238,18 +258,15 @@ export default class Weapon {
     applyBlastImpact() {
         if (!this.container) return;
 
-        // Interrupt any ongoing animations and snap back/up
         gsap.killTweensOf(this.container.position);
         gsap.killTweensOf(this.container.rotation);
 
-        // Violent jerk: Move backward (Z increases/goes positive) and tilt upward (X rotates negative)
         gsap.to(this.container.position, {
-            z: 0.4, // Jar backward
-            y: -0.1, // Dip down slightly from force
+            z: 0.4, 
+            y: -0.1, 
             duration: 0.05,
             ease: "power4.out",
             onComplete: () => {
-                // Smoothly recover back to baseline layout
                 gsap.to(this.container.position, {
                     z: 0,
                     y: 0,
@@ -276,6 +293,8 @@ export default class Weapon {
     }
 
     update() {
+        if (!this.gun) return;
+
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const b = this.bullets[i];
 

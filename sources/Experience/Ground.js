@@ -6,6 +6,8 @@ export default class Ground {
     constructor() {
         this.experience = new Experience()
         this.scene = this.experience.scene
+        
+        this.resources = this.experience.resources
 
         this.physicsWorld = this.experience.world.physics.world
 
@@ -14,14 +16,21 @@ export default class Ground {
     }
 
     init() {
-        const loader = new THREE.TextureLoader()
-        const basePath = '/pbr/tile/'
+        if (!this.resources || !this.resources.items) {
+            console.warn('[Ground] Waiting for resource repository initialization...')
+            return
+        }
 
-        const colorTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Color.jpg`)
-        const aoTexture = loader.load(`${basePath}Tiles133D_4K-JPG_AmbientOcclusion.jpg`)
-        const displacementTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Displacement.jpg`)
-        const normalTexture = loader.load(`${basePath}Tiles133D_4K-JPG_NormalGL.jpg`)
-        const roughnessTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Roughness.jpg`)
+        const colorTexture = this.resources.items['groundColor']
+        const aoTexture = this.resources.items['groundAO']
+        const displacementTexture = this.resources.items['groundDisplacement']
+        const normalTexture = this.resources.items['groundNormal']
+        const roughnessTexture = this.resources.items['groundRoughness']
+
+        if (!colorTexture || !aoTexture || !displacementTexture || !normalTexture || !roughnessTexture) {
+            console.error('Ground PBR textures missing from resource cache array.')
+            return
+        }
 
         const textures = [colorTexture, aoTexture, displacementTexture, normalTexture, roughnessTexture]
         textures.forEach((texture) => {
@@ -29,15 +38,16 @@ export default class Ground {
             texture.repeat.set(10, 10)
         })
 
-        const maxAnisotropy = this.experience.renderer.instance.capabilities.getMaxAnisotropy() || 1;
+        const maxAnisotropy = this.experience.renderer.instance.capabilities.getMaxAnisotropy() || 1
 
-        [colorTexture, aoTexture, normalTexture, roughnessTexture, displacementTexture].forEach(t => {
-            t.generateMipmaps = true;
-            t.minFilter = THREE.LinearMipmapLinearFilter;
-            t.magFilter = THREE.LinearFilter;
-            t.anisotropy = maxAnisotropy; 
-        });
-        
+        textures.forEach(t => {
+            t.generateMipmaps = true
+            t.minFilter = THREE.LinearMipmapLinearFilter
+            t.magFilter = THREE.LinearFilter
+            t.anisotropy = maxAnisotropy
+            t.needsUpdate = true 
+        })
+
         colorTexture.encoding = THREE.sRGBEncoding
         aoTexture.encoding = THREE.LinearEncoding
         displacementTexture.encoding = THREE.LinearEncoding
@@ -63,8 +73,12 @@ export default class Ground {
         this.meshInstance.receiveShadow = true
         this.scene.add(this.meshInstance)
     }
-    
+
     setPhysics() {
+        if (!this.physicsWorld) {
+            console.warn('[Ground] Physics engine world context not ready yet.')
+            return
+        }
         let bodyDesc = RAPIER.RigidBodyDesc.fixed()
         let body = this.physicsWorld.createRigidBody(bodyDesc)
 

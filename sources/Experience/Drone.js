@@ -38,43 +38,54 @@ export default class Drone {
         this.debrisSourcePieces = []
         this.activeDebris = []
 
+        this.resources = this.experience.resources
+
         this.init()
     }
 
     init() {
-        const gltfLoader = new GLTFLoader()
-        gltfLoader.load("/model/drone.glb", (gltf) => {
-            this.droneGroup = new THREE.Group()
-            this.droneModel = gltf.scene
+        if (!this.resources || !this.resources.items) {
+            console.warn('[Drone] Waiting for resource repository initialization...')
+            return
+        }
 
-            this.droneModel.rotation.y = Math.PI
+        const gltf = this.resources.items['droneModel']
+        if (!gltf) {
+            console.error('[Drone] Drone model asset missing from cache dictionary.')
+            return
+        }
 
-            this.droneModel.traverse((node) => {
-                if (node.isMesh) {
-                    node.material.color.set(new THREE.Color("#2a2a2b"))
-                    node.material.roughness = 0.5
-                    node.material.metalness = 1
+        this.droneGroup = new THREE.Group()
+        this.droneModel = gltf.scene.clone() 
+
+        this.droneModel.rotation.y = Math.PI
+
+        this.droneModel.traverse((node) => {
+            if (node.isMesh) {
+                node.material.color.set(new THREE.Color("#2a2a2b"))
+                node.material.roughness = 0.5
+                node.material.metalness = 1
+                node.castShadow = true
+                node.receiveShadow = true
+
+                if (node.name.toLowerCase().includes("body_cell")) {
+                    node.visible = false
                     node.castShadow = true
                     node.receiveShadow = true
-
-                    if (node.name.toLowerCase().includes("body_cell")) {
-                        node.visible = false
-                        node.castShadow = true
-                        node.receiveShadow = true
-                        this.debrisSourcePieces.push(node)
-                    }
+                    this.debrisSourcePieces.push(node)
                 }
-                if (node.name.includes("Blaster")) {
-                    this.blaster = node
-                }
-            })
-
-            this.droneGroup.add(this.droneModel)
-            this.droneGroup.position.set(0, 5, 0)
-            this.droneGroup.scale.set(0.5, 0.5, 0.5)
-
-            this.scene.add(this.droneGroup)
+            }
+            if (node.name && node.name.includes("Blaster")) {
+                this.blaster = node
+            }
         })
+
+        this.droneGroup.add(this.droneModel)
+        this.droneGroup.position.set(0, 5, 0)
+        this.droneGroup.scale.set(0.5, 0.5, 0.5)
+
+        this.scene.add(this.droneGroup)
+        console.log('[Drone] Air surveillance assets deployed.')
     }
 
     checkForPath() {
@@ -350,7 +361,7 @@ export default class Drone {
 
         if (this.droneGroup) {
             this.scene.remove(this.droneGroup)
-            for (let i=0; i < this.bullets.length; i++) {
+            for (let i = 0; i < this.bullets.length; i++) {
                 const bMesh = this.bullets[i]?.mesh ?? this.bullets[i]
                 if (bMesh) {
                     this.scene.remove(bMesh)

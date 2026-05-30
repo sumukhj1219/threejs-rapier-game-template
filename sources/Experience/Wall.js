@@ -7,37 +7,54 @@ export default class Wall {
     constructor() {
         this.experience = new Experience()
         this.scene = this.experience.scene
+        
+        // FIX: Map the missing resources object from your main Experience instance
+        this.resources = this.experience.resources
+        
         this.physicsWorld = this.experience.world.physics.world
         this.walls = []
         this.path = null
+        
         this.init()
     }
 
     init() {
-        const loader = new THREE.TextureLoader()
-        const basePath = '/pbr/tile/'
+        // Safe guard check to avoid console crashes if this class runs out of sequence
+        if (!this.resources || !this.resources.items) {
+            console.warn('[Wall] Resource repository has not finished downloading yet.')
+            return
+        }
 
-        const colorTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Color.jpg`)
-        const aoTexture = loader.load(`${basePath}Tiles133D_4K-JPG_AmbientOcclusion.jpg`)
-        const displacementTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Displacement.jpg`)
-        const normalTexture = loader.load(`${basePath}Tiles133D_4K-JPG_NormalGL.jpg`)
-        const roughnessTexture = loader.load(`${basePath}Tiles133D_4K-JPG_Roughness.jpg`)
+        const colorTexture = this.resources.items['groundColor']
+        const aoTexture = this.resources.items['groundAO']
+        const displacementTexture = this.resources.items['groundDisplacement']
+        const normalTexture = this.resources.items['groundNormal']
+        const roughnessTexture = this.resources.items['groundRoughness']
+        const wallGltf = this.resources.items['wallModel']
+
+        if (!wallGltf || !colorTexture || !aoTexture || !displacementTexture || !normalTexture || !roughnessTexture) {
+            console.error('[Wall] Required models or texture nodes missing from central cache.')
+            return
+        }
+
+        this.meshInstance = wallGltf.scene.clone()
+        this.meshInstance.scale.set(5.25, 10, 5.25)
+        this.meshInstance.updateMatrixWorld(true)
 
         const textures = [colorTexture, aoTexture, displacementTexture, normalTexture, roughnessTexture]
         textures.forEach((texture) => {
             texture.wrapS = texture.wrapT = THREE.RepeatWrapping
             texture.repeat.set(10, 10)
-            texture.needsUpdate = true
         })
 
-        const maxAnisotropy = this.experience.renderer.instance.capabilities.getMaxAnisotropy() || 1;
-
-        [colorTexture, aoTexture, normalTexture, roughnessTexture, displacementTexture].forEach(t => {
-            t.generateMipmaps = true;
-            t.minFilter = THREE.LinearMipmapLinearFilter;
-            t.magFilter = THREE.LinearFilter;
-            t.anisotropy = maxAnisotropy;
-        });
+        const maxAnisotropy = this.experience.renderer.instance.capabilities.getMaxAnisotropy() || 1
+        textures.forEach(t => {
+            t.generateMipmaps = true
+            t.minFilter = THREE.LinearMipmapLinearFilter
+            t.magFilter = THREE.LinearFilter
+            t.anisotropy = maxAnisotropy
+            t.needsUpdate = true
+        })
 
         colorTexture.encoding = THREE.sRGBEncoding
         aoTexture.encoding = THREE.LinearEncoding
@@ -45,58 +62,58 @@ export default class Wall {
         normalTexture.encoding = THREE.LinearEncoding
         roughnessTexture.encoding = THREE.LinearEncoding
 
-        const gltfLoader = new GLTFLoader()
-        gltfLoader.load("/model/wall.glb", (gltf) => {
-            console.log('[Wall] Model loaded')
-            this.meshInstance = gltf.scene
-            this.meshInstance.scale.set(5.25, 10, 5.25)
-            this.meshInstance.updateMatrixWorld(true)
-            this.meshInstance.traverse((node) => {
-                if (node.isMesh && node.name.includes("Cube")) {
-                    node.material = new THREE.MeshStandardMaterial({
-                        map: colorTexture,
-                        normalMap: normalTexture,
-                        roughnessMap: roughnessTexture,
-                        displacementMap: displacementTexture,
-                        displacementScale: 0.1,
-                        roughness: 0.5,
-                        metalness: 0.5,
-                        side: THREE.DoubleSide
-                    })
-                    node.castShadow = true
-                    node.receiveShadow = true
-                    this.setPhysics(node)
-                    this.walls.push(node)
-                }
-                if (node.name && node.name.includes("Path")) {
-                    console.log('[Wall] Found path node:', node.name, 'type:', node.type)
-                    this.path = node
-                    node.visible = false
-                }
-                if (node.name && node.name.includes("Pole")) {
-                    node.material = new THREE.MeshStandardMaterial({
-                        color: new THREE.Color("gray"),
-                        roughness: 0.8,
-                        metalness: 0.2
-                    })
-                }
-                if (node.name && node.name.includes("Plane")) {
-                    node.material = new THREE.MeshStandardMaterial({
-                        color: new THREE.Color("gray"),
-                        roughness: 0.8,
-                        metalness: 0.75,
-                        side: THREE.DoubleSide
-                    })
-                    node.castShadow = true
-                    node.receiveShadow = true
-                }
-            })
-            console.log('[Wall] Path set to:', this.path?.name, 'geometry:', !!this.path?.geometry)
-            this.scene.add(this.meshInstance)
+        console.log('[Wall] Parsing cached model geometries...')
+        this.meshInstance.traverse((node) => {
+            if (node.isMesh && node.name.includes("Cube")) {
+                node.material = new THREE.MeshStandardMaterial({
+                    map: colorTexture,
+                    normalMap: normalTexture,
+                    roughnessMap: roughnessTexture,
+                    displacementMap: displacementTexture,
+                    displacementScale: 0.1,
+                    roughness: 0.5,
+                    metalness: 0.5,
+                    side: THREE.DoubleSide
+                })
+                node.castShadow = true
+                node.receiveShadow = true
+                this.setPhysics(node)
+                this.walls.push(node)
+            }
+            if (node.name && node.name.includes("Path")) {
+                console.log('[Wall] Found path node:', node.name, 'type:', node.type)
+                this.path = node
+                node.visible = false
+            }
+            if (node.name && node.name.includes("Pole")) {
+                node.material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color("gray"),
+                    roughness: 0.8,
+                    metalness: 0.2
+                })
+            }
+            if (node.name && node.name.includes("Plane")) {
+                node.material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color("gray"),
+                    roughness: 0.8,
+                    metalness: 0.75,
+                    side: THREE.DoubleSide
+                })
+                node.castShadow = true
+                node.receiveShadow = true
+            }
         })
+
+        console.log('[Wall] Path set to:', this.path?.name, 'geometry:', !!this.path?.geometry)
+        this.scene.add(this.meshInstance)
     }
 
     setPhysics(mesh) {
+        if (!this.physicsWorld) {
+            console.warn('[Wall] Rapier physics world context not accessible yet.')
+            return
+        }
+
         const bbox = new THREE.Box3().setFromObject(mesh)
 
         const size = new THREE.Vector3()
