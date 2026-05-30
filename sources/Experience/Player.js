@@ -15,6 +15,7 @@ export default class Player {
         this.health = 100
 
         this.init()
+        this.setupAudio()
         this.setPhysics()
         this.controls()
 
@@ -32,7 +33,7 @@ export default class Player {
         this.isSprinting = false
         this.stamina = 100
         this.maxStamina = 100
-        this.staminaDrainRate = 20
+        this.staminaDrainRate = 0       
         this.staminaRecoveryRate = 15
         this.slideDirection = new THREE.Vector3()
         this.targetVelocity = new THREE.Vector3()
@@ -49,6 +50,35 @@ export default class Player {
         })
         this.meshInstance = new THREE.Mesh(playerGeo, playerMat)
         this.scene.add(this.meshInstance)
+    }
+
+    setupAudio() {
+        this.camera = this.experience.camera?.instance || this.experience.camera;
+        if (!this.camera) return;
+
+        this.audioListener = this.camera.children.find(child => child instanceof THREE.AudioListener);
+        if (!this.audioListener) {
+            this.audioListener = new THREE.AudioListener();
+            this.camera.add(this.audioListener);
+        }
+
+        this.resources = this.experience.resources;
+        if (!this.resources || !this.resources.items) return;
+
+        this.deathSound = new THREE.Audio(this.audioListener);
+        const deadBuffer = this.resources.items['deadSFX'];
+        if (deadBuffer) {
+            this.deathSound.setBuffer(deadBuffer);
+            this.deathSound.setVolume(0.8); 
+        }
+
+        this.breatheSound = new THREE.Audio(this.audioListener);
+        const breatheBuffer = this.resources.items['breatheSFX'];
+        if (breatheBuffer) {
+            this.breatheSound.setBuffer(breatheBuffer);
+            this.breatheSound.setLoop(true);
+            this.breatheSound.setVolume(0.0); 
+        }
     }
 
     setPhysics() {
@@ -68,7 +98,7 @@ export default class Player {
         this.canJump = true
 
         window.addEventListener("keydown", (ev) => {
-            if (this.isDead) return // Ignore inputs if dead
+            if (this.isDead) return 
             const key = ev.key.toLowerCase();
             if (key === 'shift') {
                 this.keys.shift = true;
@@ -121,12 +151,30 @@ export default class Player {
         const delta = this.experience.time.delta * 0.001
 
         const isMoving = this.keys.w || this.keys.a || this.keys.s || this.keys.d
-        this.isSprinting = this.keys.ctrl && isMoving && this.stamina > 0
+        this.isSprinting = this.keys.ctrl && isMoving
 
         if (this.isSprinting) {
             this.stamina = Math.max(0, this.stamina - this.staminaDrainRate * delta)
         } else {
             this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRecoveryRate * delta)
+        }
+
+        if (this.breatheSound && this.breatheSound.buffer) {
+            if (this.isSprinting) {
+                if (!this.breatheSound.isPlaying) {
+                    this.breatheSound.play();
+                }
+                this.breatheSound.setVolume(0.85);
+            } else {
+                if (this.breatheSound.isPlaying) {
+                    const currentVol = this.breatheSound.getVolume();
+                    if (currentVol > 0.01) {
+                        this.breatheSound.setVolume(currentVol * 0.9); 
+                    } else {
+                        this.breatheSound.stop();
+                    }
+                }
+            }
         }
 
         const speed = this.isSprinting ? this.sprintSpeed : this.moveSpeed
@@ -327,6 +375,14 @@ export default class Player {
         if (this.rigidBody && this.physicsWorld) {
             this.physicsWorld.removeRigidBody(this.rigidBody);
             this.rigidBody = null;
+        }
+
+        if (this.breatheSound && this.breatheSound.isPlaying) {
+            this.breatheSound.stop();
+        }
+
+        if (this.deathSound && this.deathSound.buffer) {
+            this.deathSound.play();
         }
 
         console.log("Player died!");

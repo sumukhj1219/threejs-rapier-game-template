@@ -34,13 +34,13 @@ export default class Drone {
         this.shotsFired = 0
         this.maxShots = 3
 
-        // Debris collections
         this.debrisSourcePieces = []
         this.activeDebris = []
 
         this.resources = this.experience.resources
 
         this.init()
+        this.setupAudio() 
     }
 
     init() {
@@ -86,6 +86,39 @@ export default class Drone {
 
         this.scene.add(this.droneGroup)
         console.log('[Drone] Air surveillance assets deployed.')
+    }
+
+    setupAudio() {
+        this.camera = this.experience.camera?.instance || this.experience.camera
+        if (!this.camera || !this.resources.items) return
+
+        this.audioListener = this.camera.children.find(child => child instanceof THREE.AudioListener)
+        if (!this.audioListener) {
+            this.audioListener = new THREE.AudioListener()
+            this.camera.add(this.audioListener)
+        }
+
+        this.explosionSound = new THREE.PositionalAudio(this.audioListener)
+        const audioBuffer = this.resources.items['blastSFX'] || this.resources.items['shootSFX']
+        if (audioBuffer) {
+            this.explosionSound.setBuffer(audioBuffer)
+            this.explosionSound.setRefDistance(10) 
+            this.explosionSound.setMaxDistance(100)
+            this.explosionSound.setVolume(5.0)
+        }
+
+        this.flyingSound = new THREE.PositionalAudio(this.audioListener)
+        const humBuffer = this.resources.items['droneSFX']
+        if (humBuffer && this.droneGroup) {
+            this.flyingSound.setBuffer(humBuffer)
+            this.flyingSound.setRefDistance(3)       
+            this.flyingSound.setMaxDistance(45)
+            this.flyingSound.setLoop(true)            
+            this.flyingSound.setVolume(5)
+
+            this.droneGroup.add(this.flyingSound)
+            this.flyingSound.play()
+        }
     }
 
     checkForPath() {
@@ -321,6 +354,31 @@ export default class Drone {
         })
     }
 
+    applyBlastForceField(originPoint) {
+        if (!this.activeDebris.length) return
+
+        const blastPower = 45.0 
+        const debrisPos = new THREE.Vector3()
+
+        this.activeDebris.forEach((debris) => {
+            const bodyTranslation = debris.body.translation()
+            debrisPos.set(bodyTranslation.x, bodyTranslation.y, bodyTranslation.z)
+
+            const forceDirection = new THREE.Vector3().subVectors(debrisPos, originPoint)
+            const distance = Math.max(0.2, forceDirection.length())
+            forceDirection.normalize()
+
+            const pushMagnitude = blastPower / (distance * distance)
+            forceDirection.multiplyScalar(pushMagnitude)
+
+            debris.body.applyImpulse({ 
+                x: forceDirection.x, 
+                y: forceDirection.y + 5.0, 
+                z: forceDirection.z 
+            }, true)
+        })
+    }
+
     updateRapierDebris() {
         if (!this.physics || !this.physics.world) return
 
@@ -351,6 +409,19 @@ export default class Drone {
         this.hasBeenHit = true
         console.log("impact point", impactPoint)
 
+        // Kill the ambient engine hum instantly on breakdown
+        if (this.flyingSound && this.flyingSound.isPlaying) {
+            this.flyingSound.stop()
+        }
+
+        if (this.explosionSound) {
+            const dummySoundObject = new THREE.Object3D()
+            dummySoundObject.position.copy(impactPoint)
+            this.scene.add(dummySoundObject)
+            dummySoundObject.add(this.explosionSound)
+            this.explosionSound.play()
+        }
+
         if (typeof Explosion === 'function') {
             this.blast = new Explosion(impactPoint)
         } else {
@@ -358,6 +429,8 @@ export default class Drone {
         }
 
         this.spawnRapierDebris()
+        
+        this.applyBlastForceField(impactPoint)
 
         if (this.droneGroup) {
             this.scene.remove(this.droneGroup)
@@ -379,7 +452,6 @@ export default class Drone {
             this.aimAtPlayer()
             this.shootAtPlayer()
             this.updateDroneBullets()
-            // Removed crashing checkCollisionWithPlayer loop invocation
         } else {
             this.updateRapierDebris()
         }

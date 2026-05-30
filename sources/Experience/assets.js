@@ -19,7 +19,16 @@ export default [
             { name: 'tentAO', source: '/pbr/fabric/Fabric048_2K-JPG_AmbientOcclusion.jpg', type: 'texture' },
             { name: 'tentDisplacement', source: '/pbr/fabric/Fabric048_2K-JPG_Displacement.jpg', type: 'texture' },
             { name: 'tentNormal', source: '/pbr/fabric/Fabric048_2K-JPG_NormalGL.jpg', type: 'texture' },
-            { name: 'tentRoughness', source: '/pbr/fabric/Fabric048_2K-JPG_Roughness.jpg', type: 'texture' }
+            { name: 'tentRoughness', source: '/pbr/fabric/Fabric048_2K-JPG_Roughness.jpg', type: 'texture' },
+
+            //SFX
+            { name: 'shootSFX', source: '/sounds/shoot.mp3', type: 'audio' },
+            { name: 'blastSFX', source: '/sounds/blast.mp3', type: 'audio' },
+            { name: 'deadSFX', source: '/sounds/dead.wav', type: 'audio' },
+            { name: 'droneSFX', source: '/sounds/drone.mp3', type: 'audio' },
+            { name: 'portalSFX', source: '/sounds/portal.mp3', type: 'audio' },
+            { name: 'breatheSFX', source: '/sounds/breathe.mp3', type: 'audio' },
+
         ]
     }
 ]

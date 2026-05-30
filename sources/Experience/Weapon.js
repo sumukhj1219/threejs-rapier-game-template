@@ -32,6 +32,7 @@ export default class Weapon {
         this.currentAmmo = this.maxAmmo;
 
         this.init();
+        this.setupAudio();
         this.setupEventListeners();
         this.createCrosshair()
     }
@@ -73,6 +74,19 @@ export default class Weapon {
         }
 
         console.log('[Weapon] Armament systems assembled.')
+    }
+
+    setupAudio() {
+        this.audioListener = new THREE.AudioListener();
+        this.camera.add(this.audioListener);
+
+        this.fireSound = new THREE.Audio(this.audioListener);
+
+        const audioBuffer = this.resources.items['shootSFX'];
+        if (audioBuffer) {
+            this.fireSound.setBuffer(audioBuffer);
+            this.fireSound.setVolume(0.4);
+        }
     }
 
     setupEventListeners() {
@@ -223,6 +237,12 @@ export default class Weapon {
     fire() {
         if (this.currentAmmo <= 0 || !this.container) return;
         this.currentAmmo--;
+
+        // Added Audio trigger block
+        if (this.fireSound && this.fireSound.buffer) {
+            if (this.fireSound.isPlaying) this.fireSound.stop();
+            this.fireSound.play();
+        }
 
         const bulletGroup = new THREE.Group();
 

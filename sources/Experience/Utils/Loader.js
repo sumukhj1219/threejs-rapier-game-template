@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import EventEmitter from './EventEmitter.js'
 import Experience from '../Experience.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -31,24 +32,20 @@ export default class Resources extends EventEmitter
     {
         this.loaders = []
 
-        // Images
+        // Textures (Updated to use TextureLoader so wrapS/wrapT works out of the box!)
+        const textureLoader = new THREE.TextureLoader()
         this.loaders.push({
-            extensions: ['jpg', 'png'],
+            extensions: ['jpg', 'jpeg', 'png'],
             action: (_resource) =>
             {
-                const image = new Image()
-
-                image.addEventListener('load', () =>
+                textureLoader.load(_resource.source, (_texture) =>
                 {
-                    this.fileLoadEnd(_resource, image)
+                    this.fileLoadEnd(_resource, _texture)
+                },
+                undefined,
+                () => {
+                    this.fileLoadEnd(_resource, null)
                 })
-
-                image.addEventListener('error', () =>
-                {
-                    this.fileLoadEnd(_resource, image)
-                })
-
-                image.src = _resource.source
             }
         })
 
@@ -64,7 +61,6 @@ export default class Resources extends EventEmitter
                 dracoLoader.load(_resource.source, (_data) =>
                 {
                     this.fileLoadEnd(_resource, _data)
-
                     DRACOLoader.releaseDecoderModule()
                 })
             }
@@ -112,6 +108,24 @@ export default class Resources extends EventEmitter
                 })
             }
         })
+
+        // FIX: Audio Loader Integration
+        const audioLoader = new THREE.AudioLoader()
+        this.loaders.push({
+            extensions: ['mp3', 'wav', 'ogg'],
+            action: (_resource) =>
+            {
+                audioLoader.load(_resource.source, (_audioBuffer) =>
+                {
+                    this.fileLoadEnd(_resource, _audioBuffer)
+                },
+                undefined,
+                (error) => {
+                    console.error(`[Resources] Failed to stream audio file: ${_resource.source}`, error)
+                    this.fileLoadEnd(_resource, null)
+                })
+            }
+        })
     }
 
     /**
@@ -122,11 +136,20 @@ export default class Resources extends EventEmitter
         for(const _resource of _resources)
         {
             this.toLoad++
-            const extensionMatch = _resource.source.match(/\.([a-z]+)$/)
+            
+            // Safe guard path verification
+            if (!_resource.source || typeof _resource.source !== 'string') {
+                console.warn(`[Resources] Invalid source definition for asset entry: ${_resource.name}`)
+                this.fileLoadEnd(_resource, null)
+                continue
+            }
 
-            if(typeof extensionMatch[1] !== 'undefined')
+            // FIX: Updated regular expression to look for alphanumeric extensions (captures the '3' in mp3)
+            const extensionMatch = _resource.source.match(/\.([a-z0-9]+)$/i)
+
+            if(extensionMatch && extensionMatch[1])
             {
-                const extension = extensionMatch[1]
+                const extension = extensionMatch[1].toLowerCase()
                 const loader = this.loaders.find((_loader) => _loader.extensions.find((_extension) => _extension === extension))
 
                 if(loader)
@@ -135,12 +158,14 @@ export default class Resources extends EventEmitter
                 }
                 else
                 {
-                    console.warn(`Cannot found loader for ${_resource}`)
+                    console.warn(`Cannot find loader for ${_resource.source}`)
+                    this.fileLoadEnd(_resource, null)
                 }
             }
             else
             {
-                console.warn(`Cannot found extension of ${_resource}`)
+                console.warn(`Cannot determine extension of ${_resource.source}`)
+                this.fileLoadEnd(_resource, null)
             }
         }
     }

@@ -6,5 +6,22 @@ export const DEATH_QUOTES = [
     "\"Death is not the greatest loss in life. The greatest loss is what dies inside us while we live.\" — Norman Cousins",
     "\"Only the dead have seen the end of war.\" — Plato",
     "\"If you drop a frog in a pot of boiling water, it will jump out. But if you raise the temperature slowly...\"",
-    "\"The jungle consumes everything. Eventually, it consumes you.\""
+    "\"The jungle consumes everything. Eventually, it consumes you.\"",
+    "\"What is a man but the sum of his memories? We are the stories we live! The tales we tell ourselves!\" — Subject 16",
+    "\"Do you think God stays in heaven because he too lives in fear of what he's created?\" — Dr. Romero",
+    "\"In war, truth is the first casualty.\" — Aeschylus",
+    "\"The world is a dangerous place to live; not because of the people who are evil, but because of the people who don't do anything about it.\" — Albert Einstein",
+    "\"He who fights with monsters should look to it that he himself does not become a monster.\" — Friedrich Nietzsche",
+    "\"And when you gaze long into an abyss, the abyss also gazes into you.\" — Friedrich Nietzsche",
+    "\"A coward dies a thousand times before his death, but the valiant never taste of death but once.\" — William Shakespeare",
+    "\"Man is not what he thinks he is, he is what he hides.\" — André Malraux",
+    "\"History is written by the victors.\" — Winston Churchill",
+    "\"The line dividing good and evil cuts through the heart of every human being.\" — Aleksandr Solzhenitsyn",
+    "\"An eye for an eye only ends up making the whole world blind.\" — Mahatma Gandhi",
+    "\"The snake which cannot cast its skin has to die. As well the minds which are prevented from changing their opinions.\" — Friedrich Nietzsche",
+    "\"Nature does not hurry, yet everything is accomplished. But out here, nature is cruel.\"",
+    "\"You can't outrun your own shadow. Especially when the world burns around you.\"",
+    "\"The hunter can quickly become the prey if he forgets to watch the trees.\"",
+    "\"If you seek revenge, you should dig two graves.\" — Confucius",
+    "\"We change the world, or the world changes us. Usually, it's the latter.\""
 ];
