@@ -1,6 +1,14 @@
 import Experience from '../sources/Experience/Experience.js'
+import Wavedash from "@wvdsh/sdk-js"
 
-document.addEventListener('DOMContentLoaded', () => {
+try {
+    console.log("[Wavedash] Establishing top-level sandbox handshake...");
+    Wavedash.init({ debug: true });
+} catch (error) {
+    console.warn("[Wavedash Warning] Running outside platform wrapper sandbox.", error.message);
+}
+
+const initGame = () => {
     const mainMenu = document.getElementById('main-menu');
     const controlsModal = document.getElementById('controls-modal');
     const loadingScreen = document.getElementById('loading-screen');
@@ -20,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingScreen) loadingScreen.classList.add('hidden');
         if (gameHud) gameHud.classList.remove('hidden');
         console.log("[HUD] System channels connected. Displaying tactical overlay.");
+        
+        try {
+            Wavedash.loadComplete();
+        } catch (e) {}
     };
 
     const bootGameEngine = () => {
@@ -37,6 +49,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (experienceInstance.resources) {
+            // If your Experience class emits individual item load updates, map them here:
+            experienceInstance.resources.on('progress', (progressRatio) => {
+                try {
+                    // progressRatio should be a decimal value between 0.0 and 1.0
+                    Wavedash.updateLoadProgressZeroToOne(progressRatio);
+                } catch (e) {}
+            });
+
             experienceInstance.resources.on('ready', () => {
                 revealGameUI();
             });
@@ -52,12 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }, 1200);
         } else {
+            // Fallback if no resource class exists
+            try { Wavedash.updateLoadProgressZeroToOne(0.5); } catch(e){}
             setTimeout(() => {
                 revealGameUI();
             }, 1000);
         }
     };
-
 
     startGameBtn.addEventListener('click', () => {
         if (gameStarted) return;
@@ -97,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (controlsModal) controlsModal.classList.add('hidden');
     });
 
-    // 4. CONNECTION CLOSE / TERMINATION HANDLER
     quitGameBtn.addEventListener('click', () => {
         if (confirm("SYSTEM WARNING: DISCONNECT FROM TERMINAL LINK?")) {
             console.log("[System] Connection terminated by user command.");
@@ -105,4 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = "about:blank"; 
         }
     });
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+} else {
+    initGame();
+}

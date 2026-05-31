@@ -6,6 +6,7 @@ import Explosion from './Explosion.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import MuzzleFlash from './MuzzleFlash.js';
 import Missile from './Missile.js';
+import Item from './Item.js'; // Imported Item script reference link
 
 export default class Drone {
     constructor(_options = {}) {
@@ -40,6 +41,9 @@ export default class Drone {
         this.activeDebris = []
 
         this.resources = this.experience.resources
+
+        // Reference target allocation array managed by the world scope instance
+        this.activeItems = this.experience.world?.activeItems || []
 
         this.init()
         this.setupAudio()
@@ -472,6 +476,25 @@ export default class Drone {
         this.spawnRapierDebris()
 
         this.applyBlastForceField(impactPoint)
+
+        // Capture death point coordinates before removing the main structural transformations
+        const spawnCoords = new THREE.Vector3()
+        if (this.droneGroup) {
+            this.droneGroup.getWorldPosition(spawnCoords)
+        } else {
+            spawnCoords.copy(impactPoint)
+        }
+
+        // Drop Mechanics probability filter pass (50% Chance to spawn item)
+        if (Math.random() < 0.5 && this.physics?.world) {
+            console.log("[Loot System] Drop signature confirmed. Spawning matrix container.");
+            const droppedLoot = new Item(spawnCoords, this.scene, this.physics.world)
+            
+            // Push item straight to your central tracked repository collection array
+            if (this.activeItems) {
+                this.activeItems.push(droppedLoot)
+            }
+        }
 
         if (this.droneGroup) {
             this.scene.remove(this.droneGroup)
