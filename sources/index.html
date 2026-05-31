@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Three.js - Template - Complex</title>
+    <title>Three.js - Shelter Abyss</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -12,7 +12,6 @@
     <div id="main-menu" class="main-menu">
         <div class="menu-background-blur"></div>
         <div class="menu-frame">
-
             <h1 class="menu-title">ABYSS</h1>
             <div class="menu-options">
                 <button id="start-game-btn" class="menu-btn active">START GAME</button>
@@ -39,15 +38,15 @@
     <div id="story-screen" class="story-screen hidden">
         <div class="story-background-blur"></div>
         <div class="story-frame">
-            <div class="story-header">INCOMING DECRYPTED TRANSMISSION...</div>
+            <div class="story-header">CRITICAL SHELTER BROADCAST...</div>
             <div class="story-content">
-                <p class="story-line">THE YEAR IS 2026. SURFACE HABITATS HAVE COLLAPSED.</p>
-                <p class="story-line">HUMANITY'S LAST REMNANTS RUN CONSCIOUSNESS SIMULATIONS WITHIN THE mainframe.</p>
-                <p class="story-line">BUT SOMETHING AWOKE IN THE DEEPEST SECTOR OF THE NETWORK.</p>
-                <p class="story-line">AN ENEMY PROGRAM KNOWN ONLY AS THE **ABYSS** IS PURGING THE CORE CHANNELS.</p>
-                <p class="story-line">YOU ARE CORE-AGENT PROTOCOL-09. INITIALIZE COMBAT DATA AND CLEAR THE SECTOR.</p>
+                <p class="story-line">THE YEAR IS 2026. THE SURFACE IS DEAD, TOXIC, AND FROZEN.</p>
+                <p class="story-line">HUMANITY'S LAST SURVIVORS ARE SEALED DEEP UNDERGROUND WITHIN **SHELTER-404**.</p>
+                <p class="story-line">BUT THE PERIMETER HAS BEEN COMPROMISED. DEEPEST SECTORS ARE UNRESPONSIVE.</p>
+                <p class="story-line">UNKNOWN INFESTED ENTITIES HAVE BROKEN THROUGH THE LOWER VENTILATION CORES.</p>
+                <p class="story-line">YOU ARE SECURITY LEADER PROTOCOL-09. ARM YOUR WEAPON AND PURGE THE INFECTED ZONES.</p>
             </div>
-            <button id="close-story-btn" class="menu-btn active">CONTINUE INITIALIZATION</button>
+            <button id="close-story-btn" class="menu-btn active">CONTINUE</button>
         </div>
     </div>
 
@@ -77,6 +76,17 @@
                 <div class="bar-row">
                     <div class="bar-fill health-bar" id="hud-health-bar"></div>
                 </div>
+            </div>
+        </div>
+
+        <div class="chrono-hud">
+            <div class="timer-row">
+                <span class="timer-label">NEXT BREACH IN</span>
+                <span id="hud-countdown" class="timer-value">60s</span>
+            </div>
+            <div class="timer-row">
+                <span class="timer-label">SURVIVAL TIME</span>
+                <span id="hud-total-time" class="timer-value sub-value">00:00</span>
             </div>
         </div>
     </div>

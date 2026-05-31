@@ -508,16 +508,13 @@ body.player-dead .screen-blur-overlay {
     }
 }
 
-/* ==========================================================================
-   CINEMATIC STORY TERMINAL OVERLAY
-   ========================================================================== */
 .story-screen {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 140; /* Sits securely between main menu and loading screens */
+    z-index: 140; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -534,16 +531,12 @@ body.player-dead .screen-blur-overlay {
 }
 
 .story-frame {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(10, 12, 16, 0.96);
     padding: 50px 60px;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9);
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 700px; /* Restricts presentation stretching */
+    max-width: 700px; 
     width: 90%;
-    border-radius: 4px;
 }
 
 .story-header {
@@ -570,12 +563,11 @@ body.player-dead .screen-blur-overlay {
     font-size: 1.05rem;
     line-height: 1.6;
     letter-spacing: 1.5px;
-    color: #cbd5e1; /* Smooth technical off-white */
+    color: #cbd5e1; 
     text-align: center;
     text-transform: uppercase;
 }
 
-/* Highlight style accent for special jargon keywords within paragraphs */
 .story-line strong {
     color: #ffffff;
     font-family: 'LogoFont', 'GameFont', sans-serif;
@@ -585,4 +577,60 @@ body.player-dead .screen-blur-overlay {
 
 #close-story-btn {
     margin-top: 10px;
+}
+
+/* ==========================================================================
+   TACTICAL CHRONO MONITOR HUD
+   ========================================================================== */
+.chrono-hud {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    background: rgba(8, 9, 12, 0.75);
+    padding: 20px 30px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 220px;
+    pointer-events: auto;
+}
+
+.timer-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.timer-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.timer-value {
+    font-family: 'GameFont', monospace;
+    font-size: 1.8rem;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+/* Specific styling for the running total clock to differentiate it */
+.timer-value.sub-value {
+    font-size: 1.3rem;
+    color: #94a3b8;
+}
+
+/* Alert pulse effect when countdown falls below 10 seconds */
+.chrono-hud.critical-alert #hud-countdown {
+    color: #ff1100;
+    text-shadow: 0 0 10px rgba(255, 17, 0, 0.6);
+    animation: textPulse 1s infinite alternate;
+}
+
+@keyframes textPulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
 }
