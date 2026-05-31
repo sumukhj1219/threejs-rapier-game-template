@@ -9,7 +9,49 @@
 </head>
 
 <body>
-    <div id="loading-screen" class="loading-screen">
+    <div id="main-menu" class="main-menu">
+        <div class="menu-background-blur"></div>
+        <div class="menu-frame">
+
+            <h1 class="menu-title">ABYSS</h1>
+            <div class="menu-options">
+                <button id="start-game-btn" class="menu-btn active">START GAME</button>
+                <button id="controls-btn" class="menu-btn">TACTICAL DATA</button>
+                <button id="quit-game-btn" class="menu-btn">QUIT GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls-modal" class="controls-modal hidden">
+        <div class="modal-frame">
+            <h2 class="modal-title">COMBAT INPUT PROTOCOLS</h2>
+            <div class="control-list">
+                <div class="control-item"><span class="key">WASD</span><span class="action">MOVEMENT</span></div>
+                <div class="control-item"><span class="key">MOUSE</span><span class="action">AIM VECTOR</span></div>
+                <div class="control-item"><span class="key">CLICK</span><span class="action">FIRE WEAPON</span></div>
+                <div class="control-item"><span class="key">R</span><span class="action">RELOAD MAG</span></div>
+                <div class="control-item"><span class="key">F</span><span class="action">RESPAWN PROTOCOL</span></div>
+            </div>
+            <button id="close-controls-btn" class="menu-btn">RETURN</button>
+        </div>
+    </div>
+
+    <div id="story-screen" class="story-screen hidden">
+        <div class="story-background-blur"></div>
+        <div class="story-frame">
+            <div class="story-header">INCOMING DECRYPTED TRANSMISSION...</div>
+            <div class="story-content">
+                <p class="story-line">THE YEAR IS 2026. SURFACE HABITATS HAVE COLLAPSED.</p>
+                <p class="story-line">HUMANITY'S LAST REMNANTS RUN CONSCIOUSNESS SIMULATIONS WITHIN THE mainframe.</p>
+                <p class="story-line">BUT SOMETHING AWOKE IN THE DEEPEST SECTOR OF THE NETWORK.</p>
+                <p class="story-line">AN ENEMY PROGRAM KNOWN ONLY AS THE **ABYSS** IS PURGING THE CORE CHANNELS.</p>
+                <p class="story-line">YOU ARE CORE-AGENT PROTOCOL-09. INITIALIZE COMBAT DATA AND CLEAR THE SECTOR.</p>
+            </div>
+            <button id="close-story-btn" class="menu-btn active">CONTINUE INITIALIZATION</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="loading-screen hidden">
         <div class="loading-frame">
             <div class="loading-title">INITIALIZING HUD & SYSTEM DATA</div>
             <div class="progress-container">
@@ -18,27 +60,15 @@
             <div class="loading-status">ESTABLISHING COMBAT COMPONENT CHANNELS...</div>
         </div>
     </div>
+
     <div class="experience"></div>
+
     <div class="screen-blur-overlay">
         <div class="death-text"></div>
         <div class="restart-btn">Press F to restart</div>
     </div>
-    <div class="hud-container">
-        <div class="weapon-hud">
-            <div class="weapon-slot inactive side-slot-3">
-                <span class="slot-num">3</span>
-                <span class="weapon-name">FRAG</span>
-            </div>
-            <div class="weapon-slot inactive side-slot-2">
-                <span class="slot-num">2</span>
-                <span class="weapon-name">STALKER</span>
-            </div>
-            <div class="weapon-slot active main-slot-1">
-                <span class="slot-num">1</span>
-                <span class="weapon-name">WARDEN</span>
-            </div>
-        </div>
 
+    <div id="game-hud" class="hud-container hidden">
         <div class="vitals-hud">
             <div class="ammo-counter">
                 <span id="ammo-current">50</span><span class="ammo-separator">/</span><span id="ammo-max">50</span>
@@ -50,6 +80,7 @@
             </div>
         </div>
     </div>
+
     <script type="module" src="./index.js"></script>
 </body>
 

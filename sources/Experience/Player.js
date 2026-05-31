@@ -33,7 +33,7 @@ export default class Player {
         this.isSprinting = false
         this.stamina = 100
         this.maxStamina = 100
-        this.staminaDrainRate = 0       
+        this.staminaDrainRate = 0
         this.staminaRecoveryRate = 15
         this.slideDirection = new THREE.Vector3()
         this.targetVelocity = new THREE.Vector3()
@@ -69,7 +69,7 @@ export default class Player {
         const deadBuffer = this.resources.items['deadSFX'];
         if (deadBuffer) {
             this.deathSound.setBuffer(deadBuffer);
-            this.deathSound.setVolume(0.8); 
+            this.deathSound.setVolume(0.8);
         }
 
         this.breatheSound = new THREE.Audio(this.audioListener);
@@ -77,7 +77,7 @@ export default class Player {
         if (breatheBuffer) {
             this.breatheSound.setBuffer(breatheBuffer);
             this.breatheSound.setLoop(true);
-            this.breatheSound.setVolume(0.0); 
+            this.breatheSound.setVolume(0.0);
         }
     }
 
@@ -98,7 +98,7 @@ export default class Player {
         this.canJump = true
 
         window.addEventListener("keydown", (ev) => {
-            if (this.isDead) return 
+            if (this.isDead) return
             const key = ev.key.toLowerCase();
             if (key === 'shift') {
                 this.keys.shift = true;
@@ -169,7 +169,7 @@ export default class Player {
                 if (this.breatheSound.isPlaying) {
                     const currentVol = this.breatheSound.getVolume();
                     if (currentVol > 0.01) {
-                        this.breatheSound.setVolume(currentVol * 0.9); 
+                        this.breatheSound.setVolume(currentVol * 0.9);
                     } else {
                         this.breatheSound.stop();
                     }
@@ -366,8 +366,9 @@ export default class Player {
         const healthBarElement = document.getElementById('hud-health-bar');
         if (healthBarElement) healthBarElement.style.transform = 'scaleX(0)';
 
+        // 1. HIDE THE GAME HUD USING OUR UTILITY CLASS
         const hudContainer = document.querySelector('.hud-container');
-        if (hudContainer) hudContainer.style.display = 'none';
+        if (hudContainer) hudContainer.classList.add('hidden');
 
         this.isDead = true;
         this.scene.remove(this.meshInstance);
@@ -398,9 +399,13 @@ export default class Player {
             deathTextElement.innerText = selectedQuote;
         }
 
+        // 2. SAFETY REMOVAL & CORRECT CLASS TARGETING
         if (blurOverlay) {
-            blurOverlay.classList.add('player-dead');
+            blurOverlay.classList.remove('hidden'); // Strip away any lingering hidden states
         }
+
+        // Add the class modifier directly to the body tag so the full CSS stylesheet activates
+        document.body.classList.add('player-dead');
 
         if (crosshair) {
             crosshair.classList.add('hidden');
