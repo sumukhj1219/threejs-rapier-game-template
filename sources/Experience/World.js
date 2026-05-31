@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import Wavedash from "@wvdsh/sdk-js" // Official Wavedash Platform SDK Singleton
 import Experience from './Experience.js'
 import Player from './Player.js'
 import Environment from './Environment.js'
@@ -22,7 +21,7 @@ export default class World {
 
         this.loadingScreen = document.getElementById('loading-screen')
         this.loadingBar = document.getElementById('loading-bar')
-        this.loadingStatusText = document.querySelector('.loading-status')
+        this.loadingStatusText = document.getElementById('loading-status-text')
 
         this.drones = []
         this.tent = null
@@ -32,7 +31,8 @@ export default class World {
         this.tentStorageVault = 0
 
         this.worldBuilt = false
-        this.scoreSubmitted = false // Track score submission to prevent infinite loops on death
+        this.scoreSubmitted = false 
+        this.leaderboardId = null   
 
         this.spawnTimer = 0
         this.spawnInterval = 30000
@@ -63,7 +63,9 @@ export default class World {
                         this.loadingBar.style.width = `${percentage}%`
                     }
 
-                    Wavedash.updateLoadProgressZeroToOne(fraction)
+                    if (typeof Wavedash !== 'undefined' && Wavedash.updateLoadProgressZeroToOne) {
+                        Wavedash.updateLoadProgressZeroToOne(fraction)
+                    }
 
                     if (this.loadingStatusText && resource) {
                         this.loadingStatusText.innerText = `DECOMPRESSING MODULE: ${resource.name.toUpperCase()}...`
@@ -71,11 +73,35 @@ export default class World {
                 }
             })
 
-            this.resources.on('end', () => {
+            this.resources.on('end', async () => {
                 console.log('[World] Resources loaded fully. Assembling world graphs...')
                 this.buildGameWorld()
 
-                Wavedash.updateLoadProgressZeroToOne(1.0)
+                if (typeof Wavedash !== 'undefined' && Wavedash.updateLoadProgressZeroToOne) {
+                    Wavedash.updateLoadProgressZeroToOne(1.0)
+                }
+                
+                if (typeof Wavedash !== 'undefined' && Wavedash.init) {
+                    Wavedash.init({ debug: true });
+
+                    try {
+                        console.log("[WAVEDASH] Resolving database metadata mapping configurations...");
+                        const leaderboard = await Wavedash.getOrCreateLeaderboard(
+                            "abyss_leaderboard",
+                            Wavedash.LeaderboardSortOrder.DESC, // Higher scores rank higher (Points)
+                            Wavedash.LeaderboardDisplayType.NUMERIC
+                        );
+                        
+                        if (leaderboard.success) {
+                            this.leaderboardId = leaderboard.data.id;
+                            console.log(`[WAVEDASH] Handshake successful. Cached ID: ${this.leaderboardId}`);
+                        } else {
+                            console.error("[WAVEDASH] Failed to get or create leaderboard record allocation.");
+                        }
+                    } catch (err) {
+                        console.error("[WAVEDASH] Exception processing SDK startup handshakes:", err);
+                    }
+                }
 
                 setTimeout(() => {
                     this.endLoadingScreen()
@@ -89,10 +115,27 @@ export default class World {
             })
         }
 
-        if (this.resources && this.resources.items && this.resources.items['gunModel']) {
-            console.log('[World] Fallback triggered: Cache verified on startup.')
+        if (this.resources && this.resources.items && Object.keys(this.resources.items).length > 0) {
+            console.log('[World] Production Cache verified successfully. Activating core layers...');
             this.buildGameWorld()
-            Wavedash.updateLoadProgressZeroToOne(1.0)
+            
+            if (this.loadingBar) this.loadingBar.style.width = '100%'
+            if (this.loadingStatusText) this.loadingStatusText.innerText = "LINK ALLOCATION STABLE."
+            
+            if (typeof Wavedash !== 'undefined' && Wavedash.init) {
+                Wavedash.init({ debug: true });
+
+                Wavedash.getOrCreateLeaderboard(
+                    "abyss_leaderboard",
+                    Wavedash.LeaderboardSortOrder.DESC,
+                    Wavedash.LeaderboardDisplayType.NUMERIC
+                ).then((leaderboard) => {
+                    if (leaderboard.success) {
+                        this.leaderboardId = leaderboard.data.id;
+                    }
+                }).catch(err => console.error(err));
+            }
+
             if (this.loadingScreen) {
                 setTimeout(() => this.endLoadingScreen(), 300)
             }
@@ -119,6 +162,10 @@ export default class World {
         this.clock = new THREE.Clock()
 
         this.worldBuilt = true
+
+        console.log("[WAVE RESET] Spawning initial entry drone instantly into combat.");
+        this.spawnNextEndlessDrone()
+        this.waveMultiplier++
     }
 
     spawnNextEndlessDrone() {
@@ -142,9 +189,48 @@ export default class World {
 
             this.loadingScreen.classList.add('loaded')
 
+            const gameHUD = document.getElementById('game-hud')
+            if (gameHUD) {
+                gameHUD.classList.remove('hidden')
+            }
+
             setTimeout(() => {
                 if (this.loadingScreen) this.loadingScreen.remove()
             }, 800)
+        }
+    }
+
+    async refreshLeaderboardDisplay() {
+        if (typeof Wavedash === 'undefined' || !this.leaderboardId) return;
+
+        const response = await Wavedash.listLeaderboardEntries(this.leaderboardId, 0, 3, false);
+        
+        if (response.success && response.data) {
+            console.log("[WAVEDASH] Live entries synchronized:", response.data);
+            
+            const overlay = document.getElementById('leaderboard-overlay');
+            if (!overlay) return;
+
+            const recordsBox = overlay.querySelector('div > div[style*="background: rgba(0,0,0,0.4)"]');
+            if (recordsBox) {
+                recordsBox.innerHTML = '<h3 style="font-size: 12px; color: #ffcc00; margin-top: 0; letter-spacing: 1px;">SHELTER ARCHIVE RECORDS</h3>';
+                
+                response.data.forEach((entry) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = "display: flex; justify-content: space-between; font-size: 14px; margin: 6px 0; color: #aaa;";
+                    
+                    if (entry.username && entry.username.toLowerCase() === "protocol-09") {
+                        row.style.color = "#00ffcc";
+                        row.style.fontWeight = "bold";
+                    }
+
+                    row.innerHTML = `
+                        <span>${entry.globalRank}. ${entry.username.toUpperCase()}</span>
+                        <span>${entry.score.toLocaleString()} PTS</span>
+                    `;
+                    recordsBox.appendChild(row);
+                });
+            }
         }
     }
 
@@ -157,36 +243,29 @@ export default class World {
 
         const playerDeadState = this.player && this.player.isDead
 
-        // --- NEW LEADERBOARD GAME OVER TRIGGER ---
         if (playerDeadState && !this.scoreSubmitted) {
-            this.scoreSubmitted = true; // Guard to execute only once on death
+            this.scoreSubmitted = true; 
 
             const totalSeconds = Math.floor(this.totalSurvivalTime / 1000);
             const finalScore = (totalSeconds * 10) + (this.tentStorageVault * 100);
 
             console.log(`[GAME OVER] Finalizing score protocols. Score: ${finalScore}`);
 
-            // Submit metrics through the Wavedash SDK
-            if (typeof Wavedash !== 'undefined' && Wavedash.submitScore) {
-                Wavedash.submitScore(finalScore);
-            }
-
-            // Unhide the game over leaderboard overlay element
-            const lbOverlay = document.getElementById('leaderboard-overlay');
-            if (lbOverlay) {
-                lbOverlay.classList.remove('hidden');
-
-                // Populate the match summary text fields
-                const summaryText = document.getElementById('lb-summary-text');
-                if (summaryText) {
-                    summaryText.innerText = `SURVIVED: ${totalSeconds}s | CARGO SECURED: ${this.tentStorageVault}`;
-                }
-
-                // Inject calculated points into your Rank slot UI
-                const playerPointsText = document.getElementById('lb-player-pts');
-                if (playerPointsText) {
-                    playerPointsText.innerText = `${finalScore.toLocaleString()} PTS`;
-                }
+            if (typeof Wavedash !== 'undefined' && this.leaderboardId) {
+                Wavedash.uploadLeaderboardScore(this.leaderboardId, finalScore, true)
+                .then((response) => {
+                    if (response.success) {
+                        console.log(`[WAVEDASH] High score verified! Global Rank position: #${response.data.globalRank}`);
+                        this.refreshLeaderboardDisplay();
+                    } else {
+                        console.warn("[WAVEDASH] Server accepted payload package transaction but rejected update bounds validation.");
+                    }
+                })
+                .catch((error) => {
+                    console.error("[WAVEDASH] Cloud sync transaction network exception:", error);
+                });
+            } else {
+                console.warn("[WAVEDASH] Upload aborted: SDK instance context lost or target Leaderboard ID unresolved.");
             }
         }
 
@@ -230,7 +309,6 @@ export default class World {
                 this.totalTimeElement.innerText = `${minutes}:${seconds}`
             }
 
-            // --- LOOT PROCESSING & TENT DEPOSIT PASS ---
             const totalTimeInSeconds = this.totalSurvivalTime / 1000
             const pMesh = this.player?.meshInstance ?? this.player?.mesh
 

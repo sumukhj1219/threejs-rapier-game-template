@@ -17,18 +17,18 @@ export default [
             { name: 'worleyNoise', source: './noise/worley.jpg', type: 'texture' },
 
             // Ground Textures (Switched from /pbr/ to ./pbr/)
-            { name: 'groundColor', source: './pbr/tile/Tiles133D_4K-JPG_Color.jpg', type: 'texture' },
-            { name: 'groundAO', source: './pbr/tile/Tiles133D_4K-JPG_AmbientOcclusion.jpg', type: 'texture' },
-            { name: 'groundDisplacement', source: './pbr/tile/Tiles133D_4K-JPG_Displacement.jpg', type: 'texture' },
-            { name: 'groundNormal', source: './pbr/tile/Tiles133D_4K-JPG_NormalGL.jpg', type: 'texture' },
-            { name: 'groundRoughness', source: './pbr/tile/Tiles133D_4K-JPG_Roughness.jpg', type: 'texture' },
+            { name: 'groundColor', source: './pbr/tile/Tiles133D_1K-JPG_Color.jpg', type: 'texture' },
+            { name: 'groundAO', source: './pbr/tile/Tiles133D_1K-JPG_AmbientOcclusion.jpg', type: 'texture' },
+            { name: 'groundDisplacement', source: './pbr/tile/Tiles133D_1K-JPG_Displacement.jpg', type: 'texture' },
+            { name: 'groundNormal', source: './pbr/tile/Tiles133D_1K-JPG_NormalGL.jpg', type: 'texture' },
+            { name: 'groundRoughness', source: './pbr/tile/Tiles133D_1K-JPG_Roughness.jpg', type: 'texture' },
 
             // Tent Textures (Switched from /pbr/ to ./pbr/)
-            { name: 'tentColor', source: './pbr/fabric/Fabric048_2K-JPG_Color.jpg', type: 'texture' },
-            { name: 'tentAO', source: './pbr/fabric/Fabric048_2K-JPG_AmbientOcclusion.jpg', type: 'texture' },
-            { name: 'tentDisplacement', source: './pbr/fabric/Fabric048_2K-JPG_Displacement.jpg', type: 'texture' },
-            { name: 'tentNormal', source: './pbr/fabric/Fabric048_2K-JPG_NormalGL.jpg', type: 'texture' },
-            { name: 'tentRoughness', source: './pbr/fabric/Fabric048_2K-JPG_Roughness.jpg', type: 'texture' },
+            { name: 'tentColor', source: './pbr/fabric/Fabric048_1K-JPG_Color.jpg', type: 'texture' },
+            { name: 'tentAO', source: './pbr/fabric/Fabric048_1K-JPG_AmbientOcclusion.jpg', type: 'texture' },
+            { name: 'tentDisplacement', source: './pbr/fabric/Fabric048_1K-JPG_Displacement.jpg', type: 'texture' },
+            { name: 'tentNormal', source: './pbr/fabric/Fabric048_1K-JPG_NormalGL.jpg', type: 'texture' },
+            { name: 'tentRoughness', source: './pbr/fabric/Fabric048_1K-JPG_Roughness.jpg', type: 'texture' },
 
             // Audio SFX Tracks (Switched from /sounds/ to ./sounds/)
             { name: 'shootSFX', source: './sounds/shoot.mp3', type: 'audio' },

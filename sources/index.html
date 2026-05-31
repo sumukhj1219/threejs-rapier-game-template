@@ -73,64 +73,6 @@
         <div class="restart-btn">Press F to restart</div>
     </div>
 
-    <div id="leaderboard-overlay" class="hidden" style="
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(5, 7, 10, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: 100;
-        display: flex; justify-content: center; align-items: center;
-        font-family: monospace; color: #fff;
-    ">
-        <div style="
-            background: #0d1117;
-            border: 2px solid #00ffcc;
-            padding: 40px;
-            border-radius: 8px;
-            width: 400px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 204, 0.2);
-        ">
-            <h2 style="color: #00ffcc; letter-spacing: 2px; margin-top: 0;">CONNECTION SEVERED</h2>
-            <div id="lb-summary-text" style="color: #888; font-size: 13px; margin-bottom: 25px;">SURVIVED: 0s | CARGO
-                SECURED: 0</div>
-
-            <div
-                style="background: rgba(0,0,0,0.4); border-radius: 4px; padding: 15px; margin-bottom: 25px; text-align: left;">
-                <h3 style="font-size: 12px; color: #ffcc00; margin-top: 0; letter-spacing: 1px;">SHELTER ARCHIVE RECORDS
-                </h3>
-                <div
-                    style="display: flex; justify-content: space-between; font-size: 14px; margin: 6px 0; color: #00ffcc; font-weight: bold;">
-                    <span>1. PROTOCOL-09 (YOU)</span>
-                    <span id="lb-player-pts">0 PTS</span>
-                </div>
-                <div
-                    style="display: flex; justify-content: space-between; font-size: 14px; margin: 6px 0; color: #aaa;">
-                    <span>2. UNIT-ZERO</span><span>4,250 PTS</span>
-                </div>
-                <div
-                    style="display: flex; justify-content: space-between; font-size: 14px; margin: 6px 0; color: #aaa;">
-                    <span>3. OVERWATCH-04</span><span>1,800 PTS</span>
-                </div>
-            </div>
-
-            <button id="lb-retry-btn" style="
-                background: transparent;
-                border: 1px solid #00ffcc;
-                color: #00ffcc;
-                padding: 10px 24px;
-                font-family: monospace;
-                cursor: pointer;
-                font-weight: bold;
-                letter-spacing: 1px;
-                transition: all 0.2s ease;
-            " onmouseover="this.style.background='rgba(0,255,204,0.1)'"
-                onmouseout="this.style.background='transparent'" onclick="window.location.reload();">
-                INITIALIZE RE-SPAWN ALLOCATION (F)
-            </button>
-        </div>
-    </div>
-
     <div id="game-hud" class="hud-container hidden">
         <div class="vitals-hud">
             <div class="ammo-counter">
