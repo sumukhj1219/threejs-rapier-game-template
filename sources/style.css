@@ -623,7 +623,6 @@ body.player-dead .screen-blur-overlay {
     color: #94a3b8;
 }
 
-/* Alert pulse effect when countdown falls below 10 seconds */
 .chrono-hud.critical-alert #hud-countdown {
     color: #ff1100;
     text-shadow: 0 0 10px rgba(255, 17, 0, 0.6);

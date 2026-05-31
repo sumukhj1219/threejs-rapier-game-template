@@ -95,7 +95,7 @@ export default class World {
         this.ground = new Ground()
         this.wall = new Wall()
         this.weapon = new Weapon()
-        this.tent = new Tent()
+        // this.tent = new Tent()
 
         this.player = new Player()
         this.view = new View()
