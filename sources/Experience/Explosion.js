@@ -15,6 +15,7 @@ export default class Explosion {
     constructor(position) {
         this.experience = new Experience()
         this.scene = this.experience.scene
+        this.resources = this.experience.resources
         this.spheres = []
         this.group = new THREE.Group()
         this.scene.add(this.group)
@@ -24,11 +25,13 @@ export default class Explosion {
     }
 
     init() {
-        const textureLoader = new THREE.TextureLoader()
-        const blastTexture = textureLoader.load('/noise/perlin.png')
-        const spikeTexture = textureLoader.load("/noise/vornoi.jpg")
-        const waveTexture = textureLoader.load('/noise/perlin.png')
-        const smokeTexture = textureLoader.load("/noise/fractal.jpg")
+        if (!this.resources) return
+
+        const blastTexture = this.resources.items['perlinNoise']
+        const spikeTexture = this.resources.items["vornoiNoise"]
+        const waveTexture = this.resources.items['perlinNoise']
+        const smokeTexture = this.resources.items["fractalNoise"]
+
 
         const blastGeometry = new THREE.SphereGeometry(0.15, 64, 64)
 

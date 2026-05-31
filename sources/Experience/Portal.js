@@ -11,12 +11,13 @@ export default class Portal {
         this.resources = this.experience.resources
 
         this.init()
-        this.setupAudio() // Instantiate dimensional sound field
+        this.setupAudio() 
     }
 
     init() {
-        const textureLoader = new THREE.TextureLoader()
-        const portalTexture = textureLoader.load("/noise/fractal.jpg")
+        if (!this.resources.items) return
+
+        const portalTexture = this.resources.items['fractalNoise']
 
         const planeGeometry = new THREE.PlaneGeometry(1, 1, 132, 132)
         const planeMaterial = new THREE.ShaderMaterial({

@@ -9,6 +9,13 @@ export default [
             { name: 'droneModel', source: './model/drone.glb', type: 'gltf' },
             { name: 'tentModel', source: './model/tent.glb', type: 'gltf' },
 
+            // Noises
+            { name: 'perlinNoise', source: './noise/perlin.png', type: 'texture' },
+            { name: 'simplexNoise', source: './noise/simplex.png', type: 'texture' },
+            { name: 'fractalNoise', source: './noise/fractal.jpg', type: 'texture' },
+            { name: 'vornoiNoise', source: './noise/vornoi.jpg', type: 'texture' },
+            { name: 'worleyNoise', source: './noise/worley.jpg', type: 'texture' },
+
             // Ground Textures (Switched from /pbr/ to ./pbr/)
             { name: 'groundColor', source: './pbr/tile/Tiles133D_4K-JPG_Color.jpg', type: 'texture' },
             { name: 'groundAO', source: './pbr/tile/Tiles133D_4K-JPG_AmbientOcclusion.jpg', type: 'texture' },

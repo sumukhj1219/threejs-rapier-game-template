@@ -32,6 +32,7 @@ export default class World {
         this.tentStorageVault = 0
 
         this.worldBuilt = false
+        this.scoreSubmitted = false // Track score submission to prevent infinite loops on death
 
         this.spawnTimer = 0
         this.spawnInterval = 30000
@@ -156,6 +157,39 @@ export default class World {
 
         const playerDeadState = this.player && this.player.isDead
 
+        // --- NEW LEADERBOARD GAME OVER TRIGGER ---
+        if (playerDeadState && !this.scoreSubmitted) {
+            this.scoreSubmitted = true; // Guard to execute only once on death
+
+            const totalSeconds = Math.floor(this.totalSurvivalTime / 1000);
+            const finalScore = (totalSeconds * 10) + (this.tentStorageVault * 100);
+
+            console.log(`[GAME OVER] Finalizing score protocols. Score: ${finalScore}`);
+
+            // Submit metrics through the Wavedash SDK
+            if (typeof Wavedash !== 'undefined' && Wavedash.submitScore) {
+                Wavedash.submitScore(finalScore);
+            }
+
+            // Unhide the game over leaderboard overlay element
+            const lbOverlay = document.getElementById('leaderboard-overlay');
+            if (lbOverlay) {
+                lbOverlay.classList.remove('hidden');
+
+                // Populate the match summary text fields
+                const summaryText = document.getElementById('lb-summary-text');
+                if (summaryText) {
+                    summaryText.innerText = `SURVIVED: ${totalSeconds}s | CARGO SECURED: ${this.tentStorageVault}`;
+                }
+
+                // Inject calculated points into your Rank slot UI
+                const playerPointsText = document.getElementById('lb-player-pts');
+                if (playerPointsText) {
+                    playerPointsText.innerText = `${finalScore.toLocaleString()} PTS`;
+                }
+            }
+        }
+
         if (this.view && this.player && !playerDeadState) this.view.update()
         if (this.player) this.player.update()
         if (this.portal) this.portal.update()
@@ -167,11 +201,9 @@ export default class World {
 
             if (this.spawnTimer >= this.spawnInterval) {
                 console.log(`[WAVE RESET] Spawning ${this.waveMultiplier} drones simultaneously into paths.`);
-
                 for (let i = 0; i < this.waveMultiplier; i++) {
                     this.spawnNextEndlessDrone()
                 }
-
                 this.waveMultiplier++
                 this.spawnTimer = 0
             }
@@ -203,52 +235,41 @@ export default class World {
             const pMesh = this.player?.meshInstance ?? this.player?.mesh
 
             if (pMesh) {
-                // 1. RUN BATTLEFIELD ITEM COLLECTION CHECKS
                 for (let i = this.activeItems.length - 1; i >= 0; i--) {
                     const item = this.activeItems[i]
-
-                    // Update physics step or hovering loop
                     item.update(totalTimeInSeconds)
 
                     if (item.mesh) {
                         const distanceToPlayer = pMesh.position.distanceTo(item.mesh.position)
-
-                        // Collection tracking trigger boundary
                         if (distanceToPlayer < 1.4) {
                             this.playerCargoCount++
-                            console.log(`[Inventory] Energy container secured. Carrying: ${this.playerCargoCount}`)
-
-                            // Wipe the item object smoothly
                             item.destroy()
                             this.activeItems.splice(i, 1)
 
-                            // Interface synchronization prints
                             const cargoHUD = document.getElementById('cargo-count')
                             if (cargoHUD) cargoHUD.innerText = this.playerCargoCount
                         }
                     }
                 }
 
-                // 2. RUN TENT BASE SECURE DEPOSIT ZONE CHECKS
                 const baseStructure = this.tent
                 if (baseStructure && baseStructure.position && this.playerCargoCount > 0) {
-
-                    // Calculate 2D flat distance (XZ plane) to ignore height mismatches
                     const dx = pMesh.position.x - baseStructure.position.x
                     const dz = pMesh.position.z - baseStructure.position.z
                     const horizontalDistanceToTent = Math.sqrt(dx * dx + dz * dz)
 
-                    // Expanded radius to 8.5 meters to account for the outer edge of the tent walls
                     if (horizontalDistanceToTent < 8.5) {
-                        console.log(`[Safe Zone] Unloading ${this.playerCargoCount} components into secure storage.`);
+                        for (let i = 0; i < this.playerCargoCount; i++) {
+                            if (typeof baseStructure.spawnStoredCrateVisual === 'function') {
+                                baseStructure.spawnStoredCrateVisual();
+                            }
+                        }
 
                         this.tentStorageVault += this.playerCargoCount
                         this.playerCargoCount = 0
 
-                        // Refresh HTML tracking text counters layout view
                         const cargoHUD = document.getElementById('cargo-count')
                         const tentHUD = document.getElementById('tent-stored-count')
-
                         if (cargoHUD) cargoHUD.innerText = this.playerCargoCount
                         if (tentHUD) tentHUD.innerText = this.tentStorageVault
                     }

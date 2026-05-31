@@ -41,7 +41,7 @@ export default class Environment {
 
     hdriDaySky() {
         const loader = new EXRLoader();
-        loader.load('/hdri/Day-Sky.exr', (texture) => {
+        loader.load('./hdri/Day-Sky.exr', (texture) => {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             this.scene.background = texture;
             this.scene.environment = texture;

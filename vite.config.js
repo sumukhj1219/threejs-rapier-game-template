@@ -5,13 +5,16 @@ import path from 'path'
 const dirname = path.resolve()
 
 export default defineConfig({
+    base: './', 
+    
     root: 'sources',
     publicDir: '../public',
     build:
     {
         outDir: '../dist',
         emptyOutDir: true,
-        sourcemap: true
+        sourcemap: true,
+        assetsDir: './' 
     },
     plugins: [glsl()]
 })
