@@ -633,3 +633,70 @@ body.player-dead .screen-blur-overlay {
     0% { opacity: 0.6; }
     100% { opacity: 1; }
 }
+
+.game-crosshair {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 32px; 
+    height: 32px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;           
+    z-index: 9999;                   
+    opacity: 0.85;                   
+    transition: opacity 0.3s ease;
+}
+
+.game-crosshair::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 3px;
+    height: 3px;
+    background: #ffffff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8), 0 0 1px rgba(0, 0, 0, 1);
+}
+
+.game-crosshair::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    background: 
+        linear-gradient(to right, #ffffff 6px, transparent 6px) no-repeat left center / 6px 2px,   /* Left tick */
+        linear-gradient(to left, #ffffff 6px, transparent 6px) no-repeat right center / 6px 2px,  /* Right tick */
+        linear-gradient(to bottom, #ffffff 6px, transparent 6px) no-repeat center top / 2px 6px,  /* Top tick */
+        linear-gradient(to top, #ffffff 6px, transparent 6px) no-repeat center bottom / 2px 6px;  /* Bottom tick */
+
+    filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 0.9));
+}
+
+/* ==========================================================================
+   TACTICAL RADAR MINIMAP OVERLAY
+   ========================================================================== */
+.minimap-container {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    width: 150px;
+    height: 150px;
+    background: rgba(8, 9, 12, 0.65);
+    border: 2px solid rgba(255, 17, 0, 0.15);
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+#minimap {
+    width: 100%;
+    height: 100%;
+    display: block;
+}

@@ -14,6 +14,9 @@ const initGame = () => {
     const loadingScreen = document.getElementById('loading-screen');
     const gameHud = document.getElementById('game-hud');
     const storyScreen = document.getElementById('story-screen');
+    
+    // Core Crosshair Reference Node
+    const gameCrosshair = document.getElementById('game-crosshair');
 
     const startGameBtn = document.getElementById('start-game-btn');
     const controlsBtn = document.getElementById('controls-btn');
@@ -24,9 +27,36 @@ const initGame = () => {
     let gameStarted = false;
     let experienceInstance = null;
 
+    // FIXED: Real-Time Crosshair Position Management
+    window.addEventListener('mousemove', (e) => {
+        if (gameCrosshair) {
+            // Check if player is actively playing (HUD is visible and menus are gone)
+            const isPlaying = gameHud && !gameHud.classList.contains('hidden');
+
+            if (isPlaying) {
+                // TRUE FPS PROTOCOL: Clear inline tracking positions.
+                // This lets your CSS (top: 50%; left: 50%;) take full control, locking it dead center.
+                gameCrosshair.style.left = '';
+                gameCrosshair.style.top = '';
+            } else {
+                // MENU MODE: Smoothly track coordinates so you can click buttons
+                gameCrosshair.style.left = `${e.clientX}px`;
+                gameCrosshair.style.top = `${e.clientY}px`;
+            }
+        }
+    });
+
     const revealGameUI = () => {
         if (loadingScreen) loadingScreen.classList.add('hidden');
         if (gameHud) gameHud.classList.remove('hidden');
+        
+        if (gameCrosshair) {
+            gameCrosshair.style.opacity = '1';
+            // Instantly clear out menu coordinates so it snaps straight to center on load
+            gameCrosshair.style.left = '';
+            gameCrosshair.style.top = '';
+        }
+        
         console.log("[HUD] System channels connected. Displaying tactical overlay.");
         
         try {
@@ -49,10 +79,8 @@ const initGame = () => {
         });
 
         if (experienceInstance.resources) {
-            // If your Experience class emits individual item load updates, map them here:
             experienceInstance.resources.on('progress', (progressRatio) => {
                 try {
-                    // progressRatio should be a decimal value between 0.0 and 1.0
                     Wavedash.updateLoadProgressZeroToOne(progressRatio);
                 } catch (e) {}
             });
@@ -72,7 +100,6 @@ const initGame = () => {
                 }
             }, 1200);
         } else {
-            // Fallback if no resource class exists
             try { Wavedash.updateLoadProgressZeroToOne(0.5); } catch(e){}
             setTimeout(() => {
                 revealGameUI();

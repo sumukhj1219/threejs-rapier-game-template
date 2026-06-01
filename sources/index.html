@@ -74,6 +74,8 @@
     </div>
 
     <div id="game-hud" class="hud-container hidden">
+        <div id="game-crosshair" class="game-crosshair"></div>
+
         <div class="vitals-hud">
             <div class="ammo-counter">
                 <span id="ammo-current">50</span><span class="ammo-separator">/</span><span id="ammo-max">50</span>
@@ -114,7 +116,9 @@
                     style="font-size: 20px; color: #ffcc00; font-weight: bold; text-shadow: 0 0 8px rgba(255,204,0,0.4);">0</span>
             </div>
         </div>
-
+        <div class="minimap-container">
+            <canvas id="minimap" width="150" height="150"></canvas>
+        </div>
         <div class="chrono-hud">
             <div class="timer-row">
                 <span class="timer-label">NEXT BREACH IN</span>
